@@ -26,5 +26,3 @@ else()
         set(XBUILD_PLATFORM_STRING "Win32")
     endif()
 endif()
-
-set(CMAKE_CONFIGURATION_TYPES "Debug;Optimized;Release" CACHE STRING "" FORCE)

@@ -5,6 +5,8 @@ else()
     set(XBUILD_PLATFORM_BITS32 ON)
 endif()
 
+set(CMAKE_CONFIGURATION_TYPES "Debug;Optimized;Release" CACHE STRING "" FORCE)
+
 # Then include operating system specific CMake module, so it can make use of
 # os-independent variables.
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
