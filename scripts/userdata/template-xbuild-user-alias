@@ -9,3 +9,48 @@
 # You can add your alias in this file.                                      #
 #############################################################################
 alias cdx='cd $XBUILDROOT'
+alias cdw='cd ~/workspace'
+alias cls='clear'
+
+# Git Alias
+alias gits='git status'
+alias gitaa='git add'
+alias gitaa='git add -A'
+alias gitignore='git checkout --'
+# UPDATE COMMIT AUTHOR INFO
+#alias gitc='git commit --author="NAME <EMAIL>" -m'
+#  -> show repo history
+alias gith='git log --pretty=format:"%h - %an, %ar : %s"'
+#  -> show file history
+alias githf='git log --follow --pretty=format:"%h - %an, %ar : %s" --'
+#  -> pull from upper stream
+alias gitpullupper='git pull upstream master'
+
+# Amend Existing Commit
+# For example, the commit tree is: A->B->C->D->E->F, and we want to amend commit C and D
+# Step 1: rebase
+#         git rebase -i B (amend  start from C, e.g. C to D)
+#         git rebase -i --root (amend  start from A, e.g. A to B)
+# Step 2: set 'edit'
+#         Now the vi pop up. For each commit we want to amend, change 'pick' to 'edit'.
+#         Then save and exit vi (:wq)
+# Step 3: Now git will automatically stop at first commit we want to amend (commit C), and we can amend it
+#         git commit --amend --author="Author Name <email@address.com>" --no-edit
+# Step 4: when amend is done for current commit, let rebase continue
+#         git rebase --continue
+# ... < REPEAT step 3 and 4, until rebase complete >
+# Step 5: push
+#         Use 'git push -f' to update your origin with the updated commits.
+
+# Submodule
+#  -> git submodule add <remote_url> <destination_folder>
+gitsubmoduleadd='git submodule add'
+gitsubmoduleinit='git submodule update --init --recursive'
+gitsubmodulepull='git submodule update --remote --merge'
+#  -> Remove submodule
+#     git submodule deinit <submodule>
+#     git rm <submodule>
+#  -> Enable submodule summary
+#     gitsubmodule_enable_summary='git config --global status.submoduleSummary true'
+#  -> Enable submodule detail diff
+#     gitsubmodule_enable_diff='git config --global diff.submodule log'
