@@ -1,7 +1,20 @@
+#############################################################################
+#                                                                           #
+# DO NOT MODIFY THIS TEMPLATES, MODIFY "xbuild-user-ssh-agent.sh" INSTEAD   #
+#                                                                           #
+#############################################################################
+
+#############################################################################
+# This script is to start ssh-agent.                                        #
+# You can modify function start_agent to add your own certs that you want   #
+# to load when agent starts.                                                #
+#############################################################################
+
 SSH_ENV=$HOME/.ssh/environment
 
 # start the ssh-agent
-function start_agent {
+function start_agent
+{
     echo "Initializing new SSH agent..."
     # spawn ssh-agent
     /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"

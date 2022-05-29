@@ -1,0 +1,211 @@
+#############################################################################
+#                                                                           #
+# DO NOT MODIFY THIS TEMPLATES, MODIFY "xbuild-user-cmake-utils.sh" INSTEAD #
+#                                                                           #
+#############################################################################
+
+#############################################################################
+# This script is to provide function/alias for cmake.                       #
+#############################################################################
+
+##
+## DEFAULT XBUILD VALUES
+##
+XBUILD_DEFAULT_SRC_DIR=.
+XBUILD_DEFAULT_BUILD_DIR=.
+XBUILD_DEFAULT_BUILD_TYPE=debug
+XBUILD_DEFAULT_BUILD_ARCH=x86
+
+if [[ "$XBUILDHOSTOS" == Windows ]]; then
+    XBUILD_DEFAULT_GENERATOR="Visual Studio 16 2019"
+    XBUILD_DEFAULT_BUILD_DIR_NAME=build.msbuild
+elif [[ "$XBUILDHOSTOS" == Linux ]]; then
+    XBUILD_DEFAULT_GENERATOR="Unix Makefiles"
+    XBUILD_DEFAULT_BUILD_DIR_NAME=build.make
+elif [[ "$XBUILDHOSTOS" == MacOS ]]; then
+    XBUILD_DEFAULT_GENERATOR="Unix Makefiles"
+    XBUILD_DEFAULT_BUILD_DIR_NAME=build.make
+else
+    echo "Unsupported OS: $XBUILDHOSTOS"
+fi
+
+# CMake Config Command:
+# XBuildCMakeConfig [--project <project>] [--src-dir <dir>] [--build-dir <dir>] [--build-arch <x86|x64|arm|arm64>] [--build-type <debug|optimized|release>] [--vs2017|--vs2019|--vs2022|--xcode]
+# Arguments:
+#   --project:      the top-level project name
+#   --src-dir:      source directory, default is current dir
+#   --build-root:   top-level build directory where the sub build directory get created (default is current dir)
+#   --build-arch:   build architecture, x86, x64, arm or arm64
+#   --debug:        set BUILD_TYPE to Debug, only for Unix Makefiles generator
+#   --optimized:    set BUILD_TYPE to Optimized, only for Unix Makefiles generator
+#   --release:      set BUILD_TYPE to Release, only for Unix Makefiles generator
+#   --vs2017:       (optional) set Generator to "Visual Studio 15 2017", only for Windows
+#   --vs2019:       (optional) set Generator to "Visual Studio 16 2019", only for Windows
+#   --vs2022:       (optional) set Generator to "Visual Studio 17 2022", only for Windows
+#   --xcode:        (optional) set Generator to "Xcode", only for MacOS
+XBuildCMakeConfig()
+{
+    # Set default variables
+    buildProject=
+    buildSrcDir=$XBUILD_DEFAULT_SRC_DIR
+    buildRootDir=$XBUILD_DEFAULT_BUILD_DIR
+    buildDirName=$XBUILD_DEFAULT_BUILD_DIR_NAME
+    buildType=$XBUILD_DEFAULT_BUILD_TYPE
+    buildArch=$XBUILD_DEFAULT_BUILD_ARCH
+    buildGenerator=$XBUILD_DEFAULT_GENERATOR
+    
+    # Parse arguments and overwrite default variables
+    argc=$#
+    argv=("$@")
+    for (( i=0; i<argc; i++ )); do
+        if [[ "${argv[i]}" == --* ]]; then
+            argkey=${argv[i]}
+            argvalue=${argv[i+1]}
+            if [[ "$argvalue" == --* ]]; then
+                argvalue=
+            fi
+            # Check arguments key/value
+            if [[ "$argkey" == --project ]]; then
+                # set project name
+                [[ "$argvalue" == "" ]] || buildProject=$argvalue
+            elif [[ "$argkey" == --src-dir ]]; then
+                # set source dir
+                [[ "$argvalue" == "" ]] || buildSrcDir=$argvalue
+            elif [[ "$argkey" == --build-root ]]; then
+                # set build root dir
+                [[ "$argvalue" == "" ]] || buildRootDir=$argvalue
+            elif [[ "$argkey" == --build-type ]]; then
+                # set build type: debug/optimized/release
+                [[ "$argvalue" == "" ]] || buildType=$argvalue
+            elif [[ "$argkey" == --build-arch ]]; then
+                # set build arch: x86/x64/arm/arm64
+                [[ "$argvalue" == "" ]] || buildArch=$argvalue
+            elif [[ "$argkey" == --vs2017 ]]; then
+                # set build generator to Visual Studio 2017 (Windows Only)
+                [[ "$XBUILDHOSTOS" == Windows ]] && buildGenerator="Visual Studio 15 2017"
+            elif [[ "$argkey" == --vs2019 ]]; then
+                # set build generator to Visual Studio 2019 (Windows Only)
+                [[ "$XBUILDHOSTOS" == Windows ]] && buildGenerator="Visual Studio 16 2019"
+            elif [[ "$argkey" == --vs2022 ]]; then
+                # set build generator to Visual Studio 2022 (Windows Only)
+                [[ "$XBUILDHOSTOS" == Windows ]] && buildGenerator="Visual Studio 17 2022"
+            elif [[ "$argkey" == --xcode ]]; then
+                # set build generator to Xcode (MacOS Only)
+                [[ "$XBUILDHOSTOS" == MacOS ]] && buildGenerator="Xcode"
+                [[ "$XBUILDHOSTOS" == MacOS ]] && buildDirName="build.xcode"
+            else
+                echo "Unexpected argument: $argkey=$argvalue"
+            fi
+        fi
+    done
+    
+    # The project name cannot be empty
+    if [[ $buildProject == "" ]]; then
+        echo "Error: XBuildCMakeConfig: --project is not set"
+        return 1
+    fi
+    
+    # The buildRootDir cannot be empty
+    if [[ $buildRootDir == "" ]]; then
+        echo "Error: XBuildCMakeConfig: --build-root has an empty value"
+        return 1
+    fi
+    
+    # Create full build dir from buildRootDir, buildProject, buildArch and buildType
+    if [[ $buildDirName == "build.make" ]]; then
+        fullBuildDir="$buildRootDir/$buildDirName/$buildProject"_"$buildArch"_"$buildType"
+    else
+        fullBuildDir="$buildRootDir/$buildDirName/$buildProject"_"$buildArch"
+    fi
+    
+    # Correct Windows BUILD_ARCH:
+    #    x86 --> Win32
+    #    arm --> ARM
+    #    arm64 --> ARM64
+    if [[ "$buildArch" == "x86" ]]; then
+        [[ "$XBUILDHOSTOS" == Windows ]] && buildArch=Win32
+    elif [[ "$buildArch" == arm* ]]; then
+        buildArch=`XBuildToUpper $buildArch`
+    fi
+    
+    echo "cmake -S $buildSrcDir -B $fullBuildDir -G \"$buildGenerator\" -A $buildArch"
+    ( cmake -S $buildSrcDir -B $fullBuildDir -G "$buildGenerator" -A $buildArch )
+}
+
+# CMake build
+# XBuildCMakeBuild [--project <project>] [--target <target>] [--build-dir <dir>] [--build-arch <x86|x64|arm|arm64>] [--build-type <debug|optimized|release>] [--xcode]
+XBuildCMakeBuild()
+{
+    # Set default variables
+    buildProject=
+    buildSrcDir=$XBUILD_DEFAULT_SRC_DIR
+    buildRootDir=$XBUILD_DEFAULT_BUILD_DIR
+    buildDirName=$XBUILD_DEFAULT_BUILD_DIR_NAME
+    buildType=$XBUILD_DEFAULT_BUILD_TYPE
+    buildArch=$XBUILD_DEFAULT_BUILD_ARCH
+    
+    # Parse arguments and overwrite default variables
+    argc=$#
+    argv=("$@")
+    for (( i=0; i<argc; i++ )); do
+        if [[ "${argv[i]}" == --* ]]; then
+            argkey=${argv[i]}
+            argvalue=${argv[i+1]}
+            if [[ "$argvalue" == --* ]]; then
+                argvalue=
+            fi
+            # Check arguments key/value
+            if [[ "$argkey" == --project ]]; then
+                # set project name
+                [[ "$argvalue" == "" ]] || buildProject=$argvalue
+            elif [[ "$argkey" == --src-dir ]]; then
+                # set source dir
+                [[ "$argvalue" == "" ]] || buildSrcDir=$argvalue
+            elif [[ "$argkey" == --build-root ]]; then
+                # set build dir
+                [[ "$argvalue" == "" ]] || buildRootDir=$argvalue
+            elif [[ "$argkey" == --build-type ]]; then
+                # set build type: debug/optimized/release
+                [[ "$argvalue" == "" ]] || buildType=$argvalue
+            elif [[ "$argkey" == --build-arch ]]; then
+                # set build arch: x86/x64/arm/arm64
+                [[ "$argvalue" == "" ]] || buildArch=$argvalue
+            elif [[ "$argkey" == --xcode ]]; then
+                [[ "$XBUILDHOSTOS" == MacOS ]] && buildDirName="build.xcode"
+            else
+                echo "Unexpected argument: $argkey=$argvalue"
+            fi
+        fi
+    done
+    
+    # The project name cannot be empty
+    if [[ $buildProject == "" ]]; then
+        echo "Error: XBuildCMakeConfig: --project is not set"
+        return 1
+    fi
+    
+    # The buildRootDir cannot be empty
+    if [[ $buildRootDir == "" ]]; then
+        echo "Error: XBuildCMakeConfig: --build-root has an empty value"
+        return 1
+    fi
+
+    # Create full build dir from buildDir, buildProject and buildArch
+    if [[ $buildDirName == "build.make" ]]; then
+        fullBuildDir="$buildRootDir/$buildDirName/$buildProject"_"$buildArch"_"$buildType"
+    else
+        fullBuildDir="$buildRootDir/$buildDirName/$buildProject"_"$buildArch"
+    fi
+    
+    # Correct Windows BUILD_ARCH:
+    #    x86 --> Win32
+    #    arm --> ARM
+    #    arm64 --> ARM64
+    if [[ "$buildArch" == "x86" ]]; then
+        [[ "$XBUILDHOSTOS" == Windows ]] && buildArch=Win32
+    elif [[ "$buildArch" == arm* ]]; then
+        buildArch=`XBuildToUpper $buildArch`
+    fi
+    
+    echo "cmake --build $fullBuildDir"
+}
