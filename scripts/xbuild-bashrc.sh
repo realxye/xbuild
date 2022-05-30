@@ -10,10 +10,20 @@ XBuildGetRoot()
     echo $rootDir
 }
 export XBUILDROOT=`echo \`XBuildGetRoot\``
-echo "XBuild Root: $XBUILDROOT"
 
 # Launch XBuild Core Scripts
 source "$XBUILDROOT/scripts/xbuild-core.sh"
+
+# Fix Mac Bash Color
+if [ "$XBUILDHOSTOS" == "MacOS" ]; then
+    parse_git_branch() {
+        git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+    }
+    export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+    export CLICOLOR=1
+    export LSCOLORS=ExFxBxDxCxegedabagacad
+    alias ls='ls -GFh'
+fi
 
 # Create default "xbuild-user-ssh-agent.sh" if it doesn't exist
 [ -f "$XBUILDROOT/scripts/userdata/xbuild-user-ssh-agent.sh" ] || tail -n +7 "$XBUILDROOT/scripts/userdata/template-xbuild-user-ssh-agent" > "$XBUILDROOT/scripts/userdata/xbuild-user-ssh-agent.sh"
