@@ -7,9 +7,9 @@ add_subdirectory(simple_console)
 add_subdirectory(simple_slib)
 
 # MacOS
-if(APPLE)
-    add_subdirectory(simple_dynlib)
-endif()
+#if(APPLE)
+#    add_subdirectory(simple_dynlib)
+#endif()
 
 # Windows
 if(WIN32)

@@ -1,5 +1,4 @@
 # Sources
-target_sources(SimpleApp PRIVATE
-    src/main.rc
+target_sources(SimpleSlib PRIVATE
     src/main.cpp
 )

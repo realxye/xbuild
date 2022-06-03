@@ -14,6 +14,19 @@ export XBUILDROOT=`echo \`XBuildGetRoot\``
 # Launch XBuild Core Scripts
 source "$XBUILDROOT/scripts/xbuild-core.sh"
 
+# Export XBuild Directories/Variables
+export XBUILD_CMAKE_VERSION=3.23.2
+export XBUILD_CMAKE_DIR=$XBUILDROOT/tools/cmake/$XBUILD_CMAKE_VERSION/$XBUILDHOSTOS
+if [[ "$XBUILDHOSTOS" == "Windows" ]]; then
+    export XBUILD_CMAKE_EXEC=$XBUILD_CMAKE_DIR/bin/cmake.exe
+elif [[ "$XBUILDHOSTOS" == "MacOS" ]]; then
+    export XBUILD_CMAKE_EXEC=$XBUILD_CMAKE_DIR/CMake.app/Contents/bin/cmake
+elif [[ "$XBUILDHOSTOS" == "Linux" ]]; then
+    export XBUILD_CMAKE_EXEC=$XBUILD_CMAKE_DIR/bin/cmake
+else
+    echo "XBuild doesn't support current OS ($XBUILDHOSTOS)"
+fi
+
 # Fix Mac Bash Color
 if [ "$XBUILDHOSTOS" == "MacOS" ]; then
     parse_git_branch() {

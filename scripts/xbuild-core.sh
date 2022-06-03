@@ -38,11 +38,31 @@ XBuildGetOS()
     elif [[ "$UNAMESTR" == DARWIN* ]]; then
         echo MacOS
     else
-        echo Unknown
+        echo ""
     fi
 }
-
 export XBUILDHOSTOS=`echo \`XBuildGetOS\``
+
+# Get and export os architecture, currently xbuild only supports following
+#    - X86
+#    - X64
+#    - ARM64
+XBuildGetOSArch()
+{
+    UNAMESTR=`XBuildToUpper \`uname -m\``
+    if [[ "$UNAMESTR" == X86_64 ]]; then
+        echo X64
+    elif [[ "$UNAMESTR" == I386 ]]; then
+        echo X86
+    elif [[ "$UNAMESTR" == ARM ]]; then
+        echo ARM
+    elif [[ "$UNAMESTR" == ARM64 ]]; then
+        echo ARM64
+    else
+        echo ""
+    fi
+}
+export XBUILDHOSTARCH=`echo \`XBuildGetOSArch\``
 
 XBuildParseArgs()
 {
@@ -59,3 +79,8 @@ XBuildParseArgs()
         fi
     done
 }
+
+# Load Windows Core Scripts
+if [[ "$XBUILDHOSTOS" == Windows ]]; then
+    source "$XBUILDROOT/scripts/xbuild-core-windows.sh"
+fi

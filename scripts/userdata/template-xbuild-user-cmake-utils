@@ -24,7 +24,7 @@ elif [[ "$XBUILDHOSTOS" == Linux ]]; then
     XBUILD_DEFAULT_BUILD_DIR_NAME=build.make
 elif [[ "$XBUILDHOSTOS" == MacOS ]]; then
     XBUILD_DEFAULT_GENERATOR="Unix Makefiles"
-    XBUILD_DEFAULT_BUILD_DIR_NAME=build.make
+    XBUILD_DEFAULT_BUILD_DIR_NAME=build.macos
 else
     echo "Unsupported OS: $XBUILDHOSTOS"
 fi
@@ -92,7 +92,7 @@ XBuildCMakeConfig()
             elif [[ "$argkey" == --xcode ]]; then
                 # set build generator to Xcode (MacOS Only)
                 [[ "$XBUILDHOSTOS" == MacOS ]] && buildGenerator="Xcode"
-                [[ "$XBUILDHOSTOS" == MacOS ]] && buildDirName="build.xcode"
+                [[ "$XBUILDHOSTOS" == MacOS ]] && buildDirName="build.macos"
             else
                 echo "Unexpected argument: $argkey=$argvalue"
             fi
@@ -112,7 +112,7 @@ XBuildCMakeConfig()
     fi
     
     # Create full build dir from buildRootDir, buildProject, buildArch and buildType
-    if [[ $buildDirName == "build.make" ]]; then
+    if [[ $buildGenerator == "Unix Makefiles" ]]; then
         fullBuildDir="$buildRootDir/$buildDirName/$buildProject"_"$buildArch"_"$buildType"
     else
         fullBuildDir="$buildRootDir/$buildDirName/$buildProject"_"$buildArch"
@@ -122,14 +122,22 @@ XBuildCMakeConfig()
     #    x86 --> Win32
     #    arm --> ARM
     #    arm64 --> ARM64
+    cmakeBuildArch=-A $buildArch
     if [[ "$buildArch" == "x86" ]]; then
-        [[ "$XBUILDHOSTOS" == Windows ]] && buildArch=Win32
-    elif [[ "$buildArch" == arm* ]]; then
-        buildArch=`XBuildToUpper $buildArch`
+        [[ "$XBUILDHOSTOS" == Windows ]] && cmakeBuildArch=-A Win32
+    else
+        [[ "$buildArch" == arm* ]] && cmakeBuildArch=-A `XBuildToUpper $buildArch`
     fi
-    
-    echo "cmake -S $buildSrcDir -B $fullBuildDir -G \"$buildGenerator\" -A $buildArch"
-    ( cmake -S $buildSrcDir -B $fullBuildDir -G "$buildGenerator" -A $buildArch )
+
+    echo "$XBUILD_CMAKE_EXEC -S $buildSrcDir -B $fullBuildDir -G \"$buildGenerator\" $cmakeBuildArch"
+    ( $XBUILD_CMAKE_EXEC -S $buildSrcDir -B $fullBuildDir -G "$buildGenerator" $cmakeBuildArch )
+    #if [[ "$buildGenerator" == "Unix Makefiles" ]]; then
+    #    echo "$XBUILD_CMAKE_EXEC -S $buildSrcDir -B $fullBuildDir -G \"$buildGenerator\""
+    #    ( $XBUILD_CMAKE_EXEC -S $buildSrcDir -B $fullBuildDir -G "$buildGenerator" )
+    #else
+    #    echo "$XBUILD_CMAKE_EXEC -S $buildSrcDir -B $fullBuildDir -G \"$buildGenerator\" -A $buildArch"
+    #    ( $XBUILD_CMAKE_EXEC -S $buildSrcDir -B $fullBuildDir -G "$buildGenerator" -A $buildArch )
+    #fi
 }
 
 # CMake build
@@ -171,7 +179,7 @@ XBuildCMakeBuild()
                 # set build arch: x86/x64/arm/arm64
                 [[ "$argvalue" == "" ]] || buildArch=$argvalue
             elif [[ "$argkey" == --xcode ]]; then
-                [[ "$XBUILDHOSTOS" == MacOS ]] && buildDirName="build.xcode"
+                [[ "$XBUILDHOSTOS" == MacOS ]] && buildDirName="build.macos"
             else
                 echo "Unexpected argument: $argkey=$argvalue"
             fi
@@ -207,5 +215,6 @@ XBuildCMakeBuild()
         buildArch=`XBuildToUpper $buildArch`
     fi
     
-    echo "cmake --build $fullBuildDir"
+    echo "$XBUILD_CMAKE_EXEC --build $fullBuildDir"
+    ($XBUILD_CMAKE_EXEC --build $fullBuildDir)
 }
