@@ -31,6 +31,8 @@ XBuildGetOS()
     UNAMESTR=`XBuildToUpper \`uname -s\``
     if [[ "$UNAMESTR" == MINGW* ]]; then
         echo Windows
+    elif [[ "$UNAMESTR" == MSYS_NT* ]]; then
+        echo Windows
     elif [[ "$UNAMESTR" == *LINUX* ]]; then
         echo Linux
     #elif [ "{$UNAMESTR}" == "{FREEBSD}" ]; then
