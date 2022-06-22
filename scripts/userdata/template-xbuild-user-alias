@@ -16,7 +16,9 @@ alias cls='clear'
 alias gits='git status'
 alias gitaa='git add'
 alias gitaa='git add -A'
-alias gitignore='git checkout --'
+alias gitrevert='git checkout --'
+alias gitignore='git update-index --assume-unchanged'
+alias gitunignore='git update-index --no-assume-unchanged'
 # UPDATE COMMIT AUTHOR INFO
 #alias gitc='git commit --author="NAME <EMAIL>" -m'
 #  -> show repo history
