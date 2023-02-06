@@ -72,15 +72,15 @@ XBuildGetVSRootDir()
 {
     if [ $1. == 2017. ]; then
         if [ -f "$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" ]; then
-            dir=`"$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" -version "[15.0,16.0)" -property installationPath`
+            dir=`"$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" -nologo -version "[15.0,16.0)" -property installationPath`
         fi
     elif [ $1. == 2019. ]; then
         if [ -f "$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" ]; then
-            dir=`"$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" -version "[16.0,17.0)" -property installationPath`
+            dir=`"$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" -nologo -version "[16.0,17.0)" -property installationPath`
         fi
     elif [ $1. == 2022. ]; then
         if [ -f "$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" ]; then
-            dir=`"$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" -version "[17.0,18.0)" -property installationPath`
+            dir=`"$XBUILD_WINDIR_PROGRAM86/Microsoft Visual Studio/Installer/vswhere.exe" -nologo -all | grep installationPath | grep 2022 | cut -c 18-`
         fi
     fi
     
