@@ -8,7 +8,8 @@ export XBUILDROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pw
 # Check XBuild profile
 if [ ! -f ~/xbuild.profile ]; then
     printf "XBuild profile doesn't exist, try to initialize xbuild ... "
-    $( python xbuild.py init  >/dev/null 2>&1)
+    # Create xbuild user profiles: ~/xbuild.profile, ~/xbuild.alias
+    $( python xbuild.py init >/dev/null 2>&1)
     #$( touch ~/xbuild.profile >/dev/null 2>&1 )
     if [ -f ~/xbuild.profile ]; then
         printf "Done\n"
@@ -16,6 +17,9 @@ if [ ! -f ~/xbuild.profile ]; then
         printf "Failed\n"
         return
     fi
+else
+    # Always ensure alias file exist
+    $( python xbuild.py init alias >/dev/null 2>&1)
 fi
 
 # Append xbuild bashrc
@@ -31,10 +35,15 @@ if [ "$XBUILD_BASHRC_INVOKE" == "" ]; then
     echo "" >> ~/.bashrc
 fi
 
-# Launch xbuild profile
+# Launch xbuild profile and alias
 source ~/xbuild.profile
+if [ -f ~/xbuild.alias ]; then
+    source ~/xbuild.alias
+fi
 
 echo "[XBUILD]"
+echo "  ROOT: $XBUILDROOT"
+echo "  Workspace: $XBUILD_WORKSPACE_ROOT"
 echo "  Toolchain: $XBUILD_TOOLCHAIN_VS"
 echo "  WDK: $XBUILD_TOOLCHAIN_WDKROOT"
 if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
@@ -68,4 +77,12 @@ else
     if [ "$XBUILD_TOOLCHAIN_DDK_DEFAULT" == "" ]; then
         echo "XBUILD Warning: Windows DDK not found"
     fi
+fi
+
+if [ "$XBUILD_WORKSPACE_ROOT" == "" ]; then
+    echo "XBUILD Warning: Workspace root is not set, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\""
+fi
+
+if [ "$XBUILD_WORKSPACE_ROOT" == "$XBUILDROOT" ]; then
+    echo "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\""
 fi

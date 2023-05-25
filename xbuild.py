@@ -6,8 +6,16 @@ import pathlib
 #from pathlib import Path
 
 # Global Variables
-kUserHomeDir=os.environ["UserProfile"]
-kXBuildHomeDir=os.path.dirname(__file__)
+kUserHomeDir=pathlib.Path(os.environ["UserProfile"]).as_posix()
+kXBuildHomeDir=pathlib.Path(os.path.dirname(__file__).lower()).as_posix()
+if kXBuildHomeDir[1] == ':':
+    kXBuildHomeDir="/" + kXBuildHomeDir[0] + kXBuildHomeDir[2:]
+
+def GetArgc(argv:list[str]):
+    if argv != None:
+        return len(argv)
+    else:
+        return 0
 
 class BuildCommon:
     """XBuild Common Tool"""
@@ -215,11 +223,21 @@ class BuildInitializer:
         self.vs2022 = BuildToolchainMSVC("2022")
         self.winkits = BuildWinKits()
 
-    def Create(self):
+    def Create(self, target):
+        if target == None or target == "profile":
+            self.CreateProfile()
+        if target == None or target == "alias":
+            self.CreateAlias()
+
+    def CreateProfile(self):
         file = os.path.join(self.userHomeDir, "xbuild.profile")
         try:
             with open(file, 'w') as f:
                 f.write("# XBuild user profile\n")
+                f.write("\n")
+                f.write("# Workspace\n")
+                f.write("#   - Root\n")
+                f.write("export XBUILD_WORKSPACE_ROOT=\"" + kXBuildHomeDir + "\"\n")
                 f.write("\n")
                 f.write("# Toochain\n")
                 vsPath=""
@@ -284,85 +302,92 @@ class BuildInitializer:
         except FileNotFoundError:
             print("Fail to create xbuild profile")
             
-    def SetStartBashrc(self):
-        file = os.path.join(self.userHomeDir, ".bashrc")
+    def CreateAlias(self):
+        file = os.path.join(self.userHomeDir, "xbuild.alias")
+        if os.path.isfile(file):
+            return
         try:
-            with open(file, 'a') as f:
-                f.write("# XBuild user profile\n")
+            with open(file, 'w') as f:
+                f.write("# XBuild alias profile\n")
                 f.write("\n")
-                f.write("# Toochain\n")
-                vsPath=""
-                if self.vs2017.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2017=\"" + pathlib.Path(self.vs2017.path).as_posix() + "\"\n")
-                    vsPath=pathlib.Path(self.vs2017.path).as_posix()
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS2017=\n")
-                if self.vs2019.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2019=\"" + pathlib.Path(self.vs2019.path).as_posix() + "\"\n")
-                    vsPath=pathlib.Path(self.vs2019.path).as_posix()
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS2019=\n")
-                if self.vs2022.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2019=\"" + pathlib.Path(self.vs2022.path).as_posix() + "\"\n")
-                    vsPath=pathlib.Path(self.vs2022.path).as_posix()
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS2022=\n")
-                if vsPath == "":
-                    f.write("export XBUILD_TOOLCHAIN_VS=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS=\"" + vsPath + "\"\n")
+                f.write("#\n")
+                f.write("# XBuild Commands\n")
+                f.write("#\n")
+                f.write("alias xbuild='python $XBUILDROOT/xbuild.py'\n")
                 f.write("\n")
-                f.write("# WDKs\n")
-                f.write("#   - Root\n")
-                if self.winkits.wdkroot == "":
-                    f.write("export XBUILD_TOOLCHAIN_WDKROOT=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_WDKROOT=\"" + pathlib.Path(self.winkits.wdkroot).as_posix() + "\"\n")
-                f.write("#   - SDK\n")
-                if len(self.winkits.sdks) == 0:
-                    f.write("export XBUILD_TOOLCHAIN_SDK_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_SDK_DEFAULT=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_SDK_VERSIONS=\"" + common.ListToString(self.winkits.sdks) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_SDK_DEFAULT=\"" + common.GetListItem(self.winkits.sdks, 0) + "\"\n")
-                f.write("#   - DDK\n")
-                if len(self.winkits.ddks) == 0:
-                    f.write("export XBUILD_TOOLCHAIN_DDK_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_DDK_DEFAULT=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_DDK_VERSIONS=\"" + common.ListToString(self.winkits.ddks) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_DDK_DEFAULT=\"" + common.GetListItem(self.winkits.ddks, 0) + "\"\n")
-                f.write("#   - UMDF\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X86_VERSIONS=\"" + common.ListToString(self.winkits.umdfX86) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X86_DEFAULT=" + common.GetListItem(self.winkits.umdfX86, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X64_VERSIONS=\"" + common.ListToString(self.winkits.umdfX64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X64_DEFAULT=" + common.GetListItem(self.winkits.umdfX64, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM_VERSIONS=\"" + common.ListToString(self.winkits.umdfArm) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM_DEFAULT=" + common.GetListItem(self.winkits.umdfArm, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.umdfArm64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.umdfArm64, 0) + "\n")
-                f.write("#   - KMDF\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X86_VERSIONS=\"" + common.ListToString(self.winkits.kmdfX86) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X86_DEFAULT=" + common.GetListItem(self.winkits.kmdfX86, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfX64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT=" + common.GetListItem(self.winkits.kmdfX64, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm64, 0) + "\n")
+                f.write("#\n")
+                f.write("# Path\n")
+                f.write("#\n")
+                f.write("alias cdw='cd $XBUILD_WORKSPACE_ROOT'\n")
+                f.write("\n")
+                f.write("#\n")
+                f.write("# Git Commands\n")
+                f.write("#\n")
+                f.write("alias gits='git status'\n")
+                f.write("alias gita='git add --'\n")
+                f.write("alias gitaa='git add -A'\n")
+                f.write("alias gitc='git commit -m'\n")
+                f.write("alias gitcloneall='git clone  --recurse-submodules'\n")
+                f.write("alias gitpullupper='git pull upstream master'\n")
+                f.write("alias gitpullall='git pull pull --recurse-submodules'\n")
+                f.write("alias gitshowlog='git log --pretty=\"%H - %an, %ad : %s\"'\n")
+                f.write("alias gitshowfilelog='git log --pretty=\"%H - %an, %ad : %s\" --'\n")
+                f.write("alias gitshowcommit='git show commit'\n")
+                f.write("alias gitfixcommitmsg='git commit --amend -m'\n")
+                f.write("alias gitundocommit='git reset --soft HEAD~1'\n")
+                f.write("alias gitdropcommit='git reset --hard HEAD~1'\n")
         except FileNotFoundError:
             print("Fail to create xbuild profile")
 
-def GetArgc(argv:list[str]):
-    if argv != None:
-        return len(argv)
-    else:
-        return 0
+class Helper:
+    def __init__(self):
+        return
+    
+    def Help(argv:list[str]):
+        argc=GetArgc(argv)
+        print("XBuild Help")
+        print("python.exe xbuild.py <COMMAND> [OPTIONS]")
+        print("COMMAND: help [COMMAND]")
+        print("         Show help information for specific command")
+        print("COMMAND: init [--reset]")
+        print("         Initialize XBUILD. It must be called once before using xbuild")
+        print("COMMAND: create [--reset]")
+        print("         Initialize XBUILD. It must be called once before using xbuild")
+    
+    def HelpBasic():
+        print("XBuild Help")
+        print("python.exe xbuild.py <COMMAND> [OPTIONS]")
+        print("Available COMMANDs:")
+        print("  help [COMMAND]: show help information.")
+        print("  init [--reset]: initialize XBUILD. It must be called once before using xbuild")
+        print("  create <project|module>: create TARGET (project or module)")
 
 def CommandInit(argv:list[str]):
     argc=GetArgc(argv)
+    target = None
+    if argc > 0:
+        target = argv[0]
     initializer=BuildInitializer()
-    initializer.Create()
+    initializer.Create(target)
+
+def CommandCreate(argv:list[str]):
+    argc=GetArgc(argv)
+    target = None
+    if argc > 0:
+        print("TARGET not found for create command, please try:\n  xbuild create <project|module> [OPTIONS]")
+        print("  xbuild create project <NAME>")
+        print("  xbuild create module <NAME> <TYPE: lib|dll|exe|drv|klib>")
+        return
+
+def CommandCreateProject(argv:list[str]):
+    argc=GetArgc(argv)
+    if argc == 0:
+        return
+
+def CommandCreatModule(argv:list[str]):
+    argc=GetArgc(argv)
+    if argc == 0:
+        return
 
 def CommandQuery(argv:list[str]):
     argc=GetArgc(argv)
@@ -465,6 +490,8 @@ def main():
         CommandQuery(args[1:])
     elif args[0] == "init":
         CommandInit(args[1:])
+    elif args[0] == "create":
+        CommandCreate(args[1:])
     else:
         CommandHelp(None)
 

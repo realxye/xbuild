@@ -24,7 +24,7 @@ TARGET_MODE=user
 
 all:
 	@echo "BUILD_ARCH =  $(BUILD_ARCH)"
-	@echo "BUILD_TYPE =  $(BUILD_TYPE)"
+	@echo "BUILD_TYPE =  $(BUILD_TYPE)"~
 	@echo "BUILD_ROOT =  $(BUILD_ROOT)"
 
 clean:
