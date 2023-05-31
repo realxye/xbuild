@@ -1,20 +1,38 @@
 #######################################################################
 #
-# XWORKSPACE MAKEFILE: COMPILER
+# XBUILD MAKEFILE: COMPILER LLVM
 #
 #     This file define compiler related data, functions and rules
 #
 ########################################################################
 
+$(error "llvm: Not implemented yet")
+
+ifeq ($(XBUILD_HOST_OSNAME),Windows)
+	ifeq ($(BUILD_TOOLSET),vs2017)
+		VSROOT=$(XBUILD_TOOLCHAIN_VS2017)
+	else ifeq ($(BUILD_TOOLSET),vs2019)
+		VSROOT=$(XBUILD_TOOLCHAIN_VS2017)
+	else ifeq ($(BUILD_TOOLSET),vs2022)
+		VSROOT=$(XBUILD_TOOLCHAIN_VS2017)
+	else
+		$(error $(BUILD_TOOLSET) is not supported)
+	endif
+    LLVM_BIN_DIR=$(VSROOT)/VC/Tools/Llvm/bin
+else
+endif
+
+
 #-----------------------------------#
 #			Compiler Tools			#
 #-----------------------------------#
 
-CC=
-LINK=
-LIB=
-RC=
-MC=
+CL=$(VS_BIN_DIR)/cl.exe
+CPPL=$(VS_BIN_DIR)/cl.exe
+LINKER=$(VS_BIN_DIR)/link.exe
+LIBER=$(VS_BIN_DIR)/lib.exe
+ML=$(VS_BIN_DIR)/ml64.exe
+
 
 #-----------------------------------#
 #	Compiler C/C++ Flags: General	#

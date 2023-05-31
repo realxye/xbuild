@@ -5,30 +5,15 @@
 #                                                                     #
 #######################################################################
 
-# Input Build parameters
-BUILD_TOOLSET=$(BuildToolset)
-BUILD_ARCH=$(BuildArch)
-BUILD_TYPE=$(BuildType)
-BUILD_ROOT=$(BuildRoot)
-TARGET_DIR=$(shell pwd)
-
-ifeq ($(PROJECT_ROOT),)
-	$(error "ProjectRoot is not defined")
-endif
-
-ifeq ($(BUILD_ROOT),)
-	$(error "BuildRoot is not defined")
-endif
-
 #
 # TARGET
 #
 
 #   - Target name
-TARGET_NAME=
+TARGET_NAME=common
 
 #   - Target type: lib, dll, exe, klib, kdrv
-TARGET_TYPE=
+TARGET_TYPE=lib
 
 #   - Target dependencies
 TARGET_DEPENDS=
@@ -47,10 +32,14 @@ TARGET_LIBS=
 #   - Libraries to be linked
 TARGET_PCH=
 
+TARGET_SRCS= \
+	src/util.cpp \
+	src/version.cpp
+
 
 #########################################
 #	MASTER MAKEFILE						#
 #	NO TARGET SETTINGS BELOW THIS LINE	#
 #########################################
 # Include master Makefile
-include "$(XBUILDROOT)/make/xmake_master_target.mak"
+include $(XBUILDROOT)/make/xmake_master_target.mak
