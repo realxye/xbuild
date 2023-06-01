@@ -389,20 +389,15 @@ ifeq ($(CXXFLAG_MODULE_OUTPUT_LOCATION),)
 	CXXFLAG_MODULE_OUTPUT_LOCATION=-ifcOutput"$(subst /,\,$(BUILD_INTDIR))"
 endif
 
-# Module dependency file name
-#ifeq ($(CXXFLAG_DEPENDENCY_LOCATION),)
-#	CXXFLAG_DEPENDENCY_LOCATION=-sourceDependencies:directives"$(subst /,\,$(BUILD_INTDIR))"
-#endif
+# Program database file name
+ifeq ($(CXXFLAG_PDB_FILE),)
+	CXXFLAG_PDB_FILE=-Fd"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_NAME).pdb"
+endif
 
 # Object file name
 #ifeq ($(CXXFLAG_OBJECT_LOCATION),)
 #	CXXFLAG_OBJECT_LOCATION=-Fo"$(BUILD_INTDIR)"
 #endif
-
-# PDB file name
-ifeq ($(CXXFLAG_PDB_FILE),)
-	CXXFLAG_PDB_FILE=-Fd"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_NAME).pdb"
-endif
 
 #-------------------------------------------#
 #	External Includes Flags					#
