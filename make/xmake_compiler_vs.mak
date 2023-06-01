@@ -8,10 +8,13 @@
 
 ifeq ($(BUILD_TOOLSET),vs2017)
 	VSROOT=$(XBUILD_TOOLCHAIN_VS2017)
+	VSTOOLSETVER=141
 else ifeq ($(BUILD_TOOLSET),vs2019)
 	VSROOT=$(XBUILD_TOOLCHAIN_VS2019)
+	VSTOOLSETVER=142
 else ifeq ($(BUILD_TOOLSET),vs2022)
 	VSROOT=$(XBUILD_TOOLCHAIN_VS2022)
+	VSTOOLSETVER=143
 else
 	$(error $(BUILD_TOOLSET) is not supported)
 endif
@@ -391,7 +394,7 @@ endif
 
 # Program database file name
 ifeq ($(CXXFLAG_PDB_FILE),)
-	CXXFLAG_PDB_FILE=-Fd"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_NAME).pdb"
+	CXXFLAG_PDB_FILE=-Fd"$(subst /,\,$(BUILD_INTDIR))\vc$(VSTOOLSETVER).pdb"
 endif
 
 # Object file name
