@@ -12,30 +12,63 @@
 #   - Target name
 TARGET_NAME=common
 
-#   - Target type: lib, dll, exe, klib, kdrv
+#   - Target type: lib, dll, console, app, klib, kdrv
+#		lib: static library
+#		dll: dynamic link lib
+#		console: executable without GUI
+#		app: executable with GUI
+#		klib: kernel mode static library
+#		kdrv: kernel mode driver
 TARGET_TYPE=lib
 
-#   - Target dependencies
+#   - Other project modules that Target depends on (Must be modules in same project)
 TARGET_DEPENDS=
 
 #   - Target include directories
 #     Don't add include directory for SDK/WDK/Dependencies
-TARGET_INCDIRS=
+TARGET_EXTRA_INCDIRS=
+
+#   - Target force include files
+TARGET_FORCE_INCLUDES=
 
 #   - Target library directories
 #     Don't add include directory for SDK/WDK/Dependencies
-TARGET_LIBDIRS=
+TARGET_EXTRA_LIBDIRS=
 
 #   - Libraries to be linked
-TARGET_LIBS=
+TARGET_EXTRA_LIBS=
 
-#   - Libraries to be linked
-TARGET_PCH=
+#   - Target definitions
+TARGET_DEFINES=
 
-TARGET_SRCS= \
-	src/util.cpp \
-	src/version.cpp
+#   - Precompile Header File (e.g. src/pch.h)
+TARGET_PRECOMPILE_HEADER=
 
+#   - Ignore warnings
+TARGET_IGNORE_WARNINGS=
+
+#   - Require Admin Privilege
+TARGET_ADMIN_PRIVILEGE=
+
+#   - Warnings as errors
+TARGET_ERROR_WARNINGS=
+
+# By default, 
+TARGET_SRCDIR=src
+
+#   - Source Files:
+#		*.c
+#		*.cxx
+#		*.cc
+#		*.cpp
+#		*.s
+#		*.asm
+#		*.rc
+#		*.manifest
+#		*.idl
+TARGET_SOURCES= \
+    util.cpp \
+    version.cpp
 
 #########################################
 #	MASTER MAKEFILE						#

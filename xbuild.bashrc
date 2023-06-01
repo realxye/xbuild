@@ -44,7 +44,7 @@ fi
 echo "[XBUILD]"
 echo "  ROOT: $XBUILDROOT"
 echo "  Workspace: $XBUILD_WORKSPACE_ROOT"
-echo "  Toolchain: $XBUILD_TOOLCHAIN_VS"
+echo "  Toolchain: $XBUILD_TOOLCHAIN_DEFAULT_VS"
 echo "  WDK: $XBUILD_TOOLCHAIN_WDKROOT"
 if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
     echo "  SDK:"
@@ -65,7 +65,7 @@ echo "  KMDF (x64): $XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT"
 echo "  KMDF (arm): $XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT"
 echo "  KMDF (arm64): $XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT"
 
-if [ "$XBUILD_TOOLCHAIN_VS" == "" ]; then
+if [ "$XBUILD_TOOLCHAIN_DEFAULT_VS" == "" ]; then
     echo "XBUILD Warning: Visual Studio not found"
 fi
 if [ "$XBUILD_TOOLCHAIN_WDKROOT" == "" ]; then

@@ -15,7 +15,6 @@ include $(XBUILDROOT)/make/xmake_common.mak
 
 PROJECT_ROOT:=$(shell pwd)
 
-
 #-----------------------------------#
 #           Sanity Check            #
 #-----------------------------------#
@@ -59,10 +58,10 @@ XBUILD_ALL_TARGETS:
 		if [ -f "$(PROJECT_ROOT)/$(Target)/Makefile" ] ; then \
 			cd  "$(PROJECT_ROOT)/$(Target)"; \
 			if [ ! -z $(BUILD_VERBOSE) ] ; then \
-				echo "  make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT)" ; \
-				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) ; \
+				echo "  make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) target-path=$(Target)" ; \
+				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
 			else \
-				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) ; \
+				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
 			fi ; \
 			cd  "$(PROJECT_ROOT)"; \
 		else \

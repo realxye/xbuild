@@ -1,6 +1,6 @@
 #######################################################################
 #
-# XWORKSPACE MAKEFILE: MASTER
+# XWORKSPACE MAKEFILE: MASTER for TARGET
 #
 #     This is the master make file
 #
@@ -10,18 +10,29 @@
 include $(XBUILDROOT)/make/xmake_common.mak
 
 PROJECT_ROOT:=$(project-root)
+TARGET_PATH:=$(target-path)
+TARGET_ROOT:=$(PROJECT_ROOT)/$(TARGET_PATH)
+
+$(info PROJECT_ROOT: $(PROJECT_ROOT))
+$(info TARGET_ROOT:  $(TARGET_ROOT))
+$(info TARGET_PATH:  $(TARGET_PATH))
 
 # Build Dirs
-#   - The project root path (e.g. /c/workspace/myproject)
+#   - The project root path (e.g. C:/workspace/myproject)
 ifeq ($(PROJECT_ROOT),)
 	$(error "PROJECT_ROOT is not defined")
 endif
+#   - The target path relative to project root (e.g. src/libraries/common)
+ifeq ($(TARGET_PATH),)
+	$(error "TARGET_PATH is not defined")
+endif
 
 # Build Dirs
-ifneq ($(ZEROCHECK_BUILD_TYPE),0)
-    BUILD_OUTDIR=$(PROJECT_ROOT)/output/build.$(BUILD_TOOLSET)/$(BUILD_TYPE)_$(BUILD_ARCH)/$(TARGET_NAME)
-    BUILD_OUTDIR_GEN=$(BUILD_OUTDIR)/generated
-    BUILD_OUTDIR_INT=$(BUILD_OUTDIR)/intermediate
+ifneq ($(BUILD_CONFIG),)
+    BUILD_ROOT=$(PROJECT_ROOT)/output/build.$(BUILD_TOOLSET)/$(BUILD_CONFIG)_$(BUILD_ARCH)
+    BUILD_OUTDIR=$(PROJECT_ROOT)/output/build.$(BUILD_TOOLSET)/$(BUILD_CONFIG)_$(BUILD_ARCH)/$(TARGET_PATH)
+    BUILD_GENDIR=$(BUILD_OUTDIR)/generated
+    BUILD_INTDIR=$(BUILD_OUTDIR)/intermediate
 endif
 
 #-----------------------------------#
@@ -42,43 +53,50 @@ endif
 #           Make Targets            #
 #-----------------------------------#
 
-all: XBUILD_ZERO XBUILD_ALL_TARGETS
+all: XBUILD_ZERO $(TARGET_FILENAME)
 	@echo "Target has been built successfully (Used: $(XTIME_DURATION) seconds)"
 
 XBUILD_ZERO:
 	@echo "----------------- Build Target: $(TARGET_NAME) ($(BUILD_TOOLSET): $(BUILD_TYPE)/$(BUILD_ARCH)) -----------------" ; \
 	echo "Start at `date "+%Y-%m-%d %H:%M:%S"`" ; \
+	echo "> ZeroCheck ..." ; \
 	if [ -z $(TARGET_NAME) ]; then \
-		echo "TARGET_NAME is not defined" ; \
+		echo "    ERROR: TARGET_NAME is not defined" ; \
 		exit 1 ; \
-	else \
-		if [ ! -z $(BUILD_VERBOSE) ]; then \
-			echo "TARGET_NAME: $(TARGET_NAME)" ; \
-		fi ; \
 	fi ; \
 	if [ -z $(BUILD_TOOLSET) ]; then \
-		echo "BUILD_TOOLSET is not defined" ; \
+		echo "    ERROR: BUILD_TOOLSET is not defined" ; \
 		exit 1 ; \
-	else \
-		if [ ! -z $(BUILD_VERBOSE) ]; then \
-			echo "BUILD_TOOLSET: $(BUILD_TOOLSET)" ; \
-		fi ; \
 	fi ; \
 	if [ -z $(BUILD_CONFIG) ]; then \
-		echo "BUILD_CONFIG is not defined" ; \
+		echo "    ERROR: BUILD_CONFIG is not defined" ; \
 		exit 1 ; \
-	else \
-		if [ ! -z $(BUILD_VERBOSE) ]; then \
-			echo "BUILD_CONFIG: $(BUILD_CONFIG)" ; \
-		fi ; \
 	fi ; \
 	if [ -z $(BUILD_ARCH) ]; then \
-		echo "BUILD_ARCH is not defined" ; \
+		echo "    ERROR: BUILD_ARCH is not defined" ; \
 		exit 1 ; \
-	else \
-		if [ ! -z $(BUILD_VERBOSE) ]; then \
-			echo "BUILD_ARCH: $(BUILD_ARCH)" ; \
-		fi ; \
+	fi ; \
+	if [ ! -z $(BUILD_VERBOSE) ]; then \
+		echo "  [Target]" ; \
+		echo "    Name:   $(TARGET_NAME)" ; \
+		echo "    Type:   $(TARGET_TYPE)" ; \
+		echo "  [Build Options]" ; \
+		echo "    Toolset:         $(BUILD_TOOLSET)" ; \
+		echo "    Config:          $(BUILD_CONFIG)" ; \
+		echo "    Architecture:    $(BUILD_ARCH)" ; \
+		echo "    OutputDir:       $(BUILD_OUTDIR)" ; \
+		echo "    IntermediateDir: $(BUILD_INTDIR)" ; \
+		echo "    GeneratedDir:    $(BUILD_GENDIR)" ; \
+		echo "  [Build Tools]" ; \
+		echo "    CC:              $(BUILDTOOL_CC)" ; \
+		echo "    CXX:             $(BUILDTOOL_CXX)" ; \
+		echo "    LINK:            $(BUILDTOOL_LINK)" ; \
+		echo "    LIB:             $(BUILDTOOL_LIB)" ; \
+		echo "    ML:              $(BUILDTOOL_ML)" ; \
+		echo "    RC:              $(BUILDTOOL_RC)" ; \
+		echo "    MC:              $(BUILDTOOL_MC)" ; \
+		echo "    MT:              $(BUILDTOOL_MT)" ; \
+		echo "    MIDL:            $(BUILDTOOL_MIDL)" ; \
 	fi
 
 clean:

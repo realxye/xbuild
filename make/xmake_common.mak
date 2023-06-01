@@ -36,7 +36,7 @@ XBUILD_OS_ARCHS:=x86 x64
 XBUILD_ARCHITECTURES:=x86 x64 arm arm64
 XBUILD_CONFIGS:=debug release
 XBUILD_TOOLSETS:=vs vs2017 vs2019 vs2022 llvm gcc
-XBUILD_TARGET_TYPES:=lib dll exe klib kdrv
+XBUILD_TARGET_TYPES:=lib dll console app klib kdrv
 
 #-----------------------------------#
 #           System Check            #
