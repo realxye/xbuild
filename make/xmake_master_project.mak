@@ -70,9 +70,9 @@ XBUILD_ALL_TARGETS:
 			cd  "$(PROJECT_ROOT)/$(Target)"; \
 			if [ ! -z $(BUILD_VERBOSE) ] ; then \
 				echo "  $(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target)" ; \
-				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
+				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target) || exit 1 ; \
 			else \
-				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
+				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) target-path=$(Target) || exit 1 ; \
 			fi ; \
 			cd  "$(PROJECT_ROOT)"; \
 		else \
