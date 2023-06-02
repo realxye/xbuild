@@ -9,14 +9,6 @@
 # Inlcude common make file
 include $(XBUILDROOT)/make/xmake_common.mak
 
-PROJECT_ROOT:=$(project-root)
-TARGET_PATH:=$(target-path)
-TARGET_ROOT:=$(PROJECT_ROOT)/$(TARGET_PATH)
-
-$(info PROJECT_ROOT: $(PROJECT_ROOT))
-$(info TARGET_ROOT:  $(TARGET_ROOT))
-$(info TARGET_PATH:  $(TARGET_PATH))
-
 # Build Dirs
 #   - The project root path (e.g. C:/workspace/myproject)
 ifeq ($(PROJECT_ROOT),)
@@ -53,11 +45,11 @@ endif
 #           Make Targets            #
 #-----------------------------------#
 
-all: XBUILD_ZERO $(TARGET_FILENAME)
-	@echo "Target has been built successfully (Used: $(XTIME_DURATION) seconds)"
+all: XBUILD_ZERO $(TARGET_FILENAME) XBUILD_POST_BUILD
+	@echo "> Target has been built successfully (Used $(XTIME_DURATION) seconds)"
 
 XBUILD_ZERO:
-	@echo "----------------- Build Target: $(TARGET_NAME) ($(BUILD_TOOLSET): $(BUILD_TYPE)/$(BUILD_ARCH)) -----------------" ; \
+	@echo "----------------- Build Target: $(TARGET_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) -----------------" ; \
 	echo "Start at `date "+%Y-%m-%d %H:%M:%S"`" ; \
 	echo "> ZeroCheck ..." ; \
 	if [ -z $(TARGET_NAME) ]; then \
@@ -76,7 +68,7 @@ XBUILD_ZERO:
 		echo "    ERROR: BUILD_ARCH is not defined" ; \
 		exit 1 ; \
 	fi ; \
-	if [ ! -z $(BUILD_VERBOSE) ]; then \
+	if [ ! -z $(BUILD_VERBOSE_DBG) ]; then \
 		echo "  [Target]" ; \
 		echo "    Name:   $(TARGET_NAME)" ; \
 		echo "    Type:   $(TARGET_TYPE)" ; \
@@ -97,7 +89,8 @@ XBUILD_ZERO:
 		echo "    MC:              $(BUILDTOOL_MC)" ; \
 		echo "    MT:              $(BUILDTOOL_MT)" ; \
 		echo "    MIDL:            $(BUILDTOOL_MIDL)" ; \
-	fi
+	fi ; \
+	echo "> Compiling ..."
 
 clean:
 	@echo '----------------- Clean Target: $(TARGET_NAME) -----------------' ; \
@@ -140,4 +133,4 @@ clean:
 			rm -rf "$(PROJECT_ROOT)/output/build.$(BUILD_TOOLSET)/$(BUILD_TYPE)_$(BUILD_ARCH)/$(TARGET_NAME)" ; \
 		fi ; \
 	fi ; \
-	echo "Target has been cleaned (Used: $(XTIME_DURATION) seconds)"
+	echo "Target has been cleaned (Used $(XTIME_DURATION) seconds)"

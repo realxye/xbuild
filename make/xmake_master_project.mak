@@ -14,6 +14,7 @@ include $(XBUILDROOT)/make/xmake_common.mak
 #-----------------------------------#
 
 PROJECT_ROOT:=$(shell pwd)
+BUILD_TARGET:=$(target)
 
 #-----------------------------------#
 #           Sanity Check            #
@@ -35,7 +36,17 @@ else
 endif
 
 all: XBUILD_ZERO XBUILD_ALL_TARGETS
-	@echo "Target has been built successfully (Used: $(XTIME_DURATION) seconds)"
+	@echo " " ; \
+	echo ">>>>>>>>> PROJECT: $(PROJECT_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) HAS BEEN BUILT SUCCESSFULLY <<<<<<<<<" ; \
+	echo "Duration: $(XTIME_DURATION) seconds" ; \
+	echo " " ; \
+	echo " "
+
+help:
+	@echo "- Make Project"
+	@echo "    make <arch=x86|x64|arm|arm64> <config=debug|release> [verbose=false|true|debug] [target=path-to-target]"
+	@echo "- Clean Project"
+	@echo "    make clean [<arch=x86|x64|arm|arm64 config=debug|release] [verbose=false|true|debug] [target=path-to-target]"
 
 XBUILD_ZERO:
 	@echo " " ; \
@@ -58,10 +69,10 @@ XBUILD_ALL_TARGETS:
 		if [ -f "$(PROJECT_ROOT)/$(Target)/Makefile" ] ; then \
 			cd  "$(PROJECT_ROOT)/$(Target)"; \
 			if [ ! -z $(BUILD_VERBOSE) ] ; then \
-				echo "  make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) target-path=$(Target)" ; \
-				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
+				echo "  $(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target)" ; \
+				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
 			else \
-				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
+				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) target-path=$(Target) ; \
 			fi ; \
 			cd  "$(PROJECT_ROOT)"; \
 		else \
@@ -78,8 +89,8 @@ clean:
 		if [ -f "$(PROJECT_ROOT)/$(Target)/Makefile" ] ; then \
 			cd  "$(PROJECT_ROOT)/$(Target)"; \
 			if [ ! -z $(BUILD_VERBOSE) ] ; then \
-				echo "  make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) clean" ; \
-				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(BUILD_VERBOSE) project-root=$(PROJECT_ROOT) ; \
+				echo "  make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) clean" ; \
+				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) ; \
 			else \
 				make arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) clean ; \
 			fi ; \

@@ -1,0 +1,4 @@
+LIBRARY sampledll
+EXPORTS
+   GetSampleVersion   @1
+   

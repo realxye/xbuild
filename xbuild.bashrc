@@ -41,9 +41,17 @@ if [ -f ~/xbuild.alias ]; then
     source ~/xbuild.alias
 fi
 
+# Export Xbuild Tools
+if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+    export XBUILDMAKE=$XBUILDROOT/tools/make/windows/bin/make.exe
+else
+    export XBUILDMAKE=make
+fi
+
 echo "[XBUILD]"
 echo "  ROOT: $XBUILDROOT"
 echo "  Workspace: $XBUILD_WORKSPACE_ROOT"
+echo "  Make: $XBUILDMAKE"
 echo "  Toolchain: $XBUILD_TOOLCHAIN_DEFAULT_VS"
 echo "  WDK: $XBUILD_TOOLCHAIN_WDKROOT"
 if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then

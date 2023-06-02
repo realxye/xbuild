@@ -58,8 +58,9 @@ endif
 #---------------------------------------#
 
 BUILD_INCDIRS= \
-	-Iinclude \
-	-Isrc \
+	-I"$(TARGET_ROOT)" \
+	-I"$(TARGET_ROOT)/include" \
+	-I"$(TARGET_ROOT)/src" \
 	-I"$(BUILD_GENDIR)" \
 	-I"$(WDK_INC_DIR)/shared"
 
@@ -83,7 +84,7 @@ else
 	endif
 endif
 
-BUILD_INCDIRS += $(foreach f, $(TARGET_DEPENDS), $(addprefix -I", $(addsuffix /include",$f)))
+BUILD_INCDIRS += $(foreach f, $(TARGET_DEPENDS), $(addprefix -I"$(PROJECT_ROOT)/, $(addsuffix /include",$f)))
 BUILD_INCDIRS += $(foreach f, $(TARGET_EXTRA_INCDIRS), $(addprefix -I", $(addsuffix ",$f)))
 
 #---------------------------------------#
@@ -97,19 +98,20 @@ BUILD_INCDIRS += $(foreach f, $(TARGET_EXTRA_INCDIRS), $(addprefix -I", $(addsuf
 #---------------------------------------#
 
 BUILD_LIBDIRS= \
+	-LIBPATH:"$(BUILD_INTDIR)" \
 	-LIBPATH:"$(BUILD_GENDIR)" \
 	-LIBPATH:"$(BUILD_OUTDIR)"
 
 ifeq ($(TARGET_MODE),kernel)
     BUILD_LIBDIRS += \
-		-LIBPATH:"$(WDK_LIB_DIR)/km"
+		-LIBPATH:"$(WDK_LIB_DIR)/km/$(BUILD_ARCH)"
 	ifneq ($(WDK_KMDF_LIB_DIR),)
         BUILD_LIBDIRS += -LIBPATH:"$(WDK_KMDF_LIB_DIR)"
 	endif
 else
     BUILD_LIBDIRS += \
-		-LIBPATH:"$(WDK_LIB_DIR)/um" \
-		-LIBPATH:"$(WDK_LIB_DIR)/ucrt" \
+		-LIBPATH:"$(WDK_LIB_DIR)/um/$(BUILD_ARCH)" \
+		-LIBPATH:"$(WDK_LIB_DIR)/ucrt/$(BUILD_ARCH)" \
 		-LIBPATH:"$(VS_LIB_DIR)"
 	ifneq ($(VS_ATL_LIB_DIR),)
         BUILD_LIBDIRS += -LIBPATH:"$(VS_ATL_LIB_DIR)"
@@ -119,8 +121,8 @@ else
 	endif
 endif
 
-BUILD_LIBDIRS += $(foreach f, $(TARGET_DEPENDS), $(addprefix -I", $(addsuffix /include",$f)))
-BUILD_LIBDIRS += $(foreach f, $(TARGET_EXTRA_LIBDIRS), $(addprefix -I", $(addsuffix ",$f)))
+BUILD_LIBDIRS += $(foreach f, $(TARGET_DEPENDS), $(addprefix -LIBPATH:"$(BUILD_OUTROOT)/, $(addsuffix ",$f)))
+BUILD_LIBDIRS += $(foreach f, $(TARGET_EXTRA_LIBDIRS), $(addprefix -LIBPATH:", $(addsuffix ",$f)))
 
 #####################################
 #		Compiler C/C++ Flags		#
@@ -240,6 +242,52 @@ ifneq ($(filter $(CXXFLAG_STD_PREPROCESSOR),yes true 1),)
 else
 	CXXFLAG_STD_PREPROCESSOR=-Zc:preprocessor-
 endif
+
+# TARGET_WINVER
+ifeq ($(TARGET_WINVER),)
+	TARGET_WINVER=0x0A00
+endif
+
+# Preprocessor Defines
+#	- Default defines
+CXXFLAG_PREPROCESSOR_DEFINES= \
+	-DWIN32 \
+	-DNOMINMAX \
+	-DWIN32_LEAN_AND_MEAN \
+	-D_CRT_SECURE_NO_WARNINGS \
+	-D_SCL_SECURE_NO_WARNINGS \
+	-DWINVER=$(TARGET_WINVER) \
+	-D_WIN32_WINNT=$(TARGET_WINVER) \
+	-DNTDDI_VERSION=$(TARGET_WINVER)0000 \
+	-DUNICODE \
+	-D_UNICODE
+
+#	- Release vs Debug
+ifeq ($(BUILD_CONFIG),release)
+	CXXFLAG_PREPROCESSOR_DEFINES += -DNDEBUG
+else
+	CXXFLAG_PREPROCESSOR_DEFINES += -D_DEBUG -DDBG=1
+endif
+
+#	- Architecture definitions
+ifeq ($(BUILD_ARCH), x64)
+    CXXFLAG_PREPROCESSOR_DEFINES += -D_X64_=1 -Damd64=1 -D_WIN64=1 -D_AMD64_=1 -DAMD64=1
+else
+    CXXFLAG_PREPROCESSOR_DEFINES += -D_X86_=1 -Di386=1 -Dx86=1
+endif
+
+#	- Definitions for kernel
+ifeq ($(TARGE_TMODE),kernel)
+    CXXFLAG_PREPROCESSOR_DEFINES+=-analyze -analyze:"stacksize1024" -kernel -DKERNELMODE=1 -DSTD_CALL -DALLOC_PRAGMA
+endif
+
+#	- Target is DLL
+ifeq ($(TARGET_TYPE),dll)
+    CXXFLAG_PREPROCESSOR_DEFINES += -D_USRDLL -D_WINDLL
+endif
+
+#	- Target defines defines
+CXXFLAG_PREPROCESSOR_DEFINES += $(foreach f, $(TARGET_DEFINES), $(addprefix -D, $f))
 
 #-------------------------------------------#
 #	Code Generation	Flags					#
@@ -370,6 +418,15 @@ ifneq ($(CFLAG_STD_LIB),)
 endif
 
 #-------------------------------------------#
+#	Precompile Header						#
+#-------------------------------------------#
+
+ifneq ($(TARGET_PRECOMPILE_HEADER),)
+    CXXFLAG_PCH_USE=-Yu"$(TARGET_PRECOMPILE_HEADER)" -Fp"$(subst /,\,$(BUILD_INTDIR))\$(TARGET_NAME).pch"
+    CXXFLAG_PCH_CREATE=-Yc"$(TARGET_PRECOMPILE_HEADER)" -Fp"$(subst /,\,$(BUILD_INTDIR))\$(TARGET_NAME).pch"
+endif
+
+#-------------------------------------------#
 #	Output Files Flags						#
 #-------------------------------------------#
 
@@ -430,7 +487,11 @@ endif
 
 # Compile As: C (/TC), C++ (/TP), C++ Module (/interface), C++ Module Internal Partition (/internalPartition), C++ Header Unit (/exportHeader)
 ifeq ($(CXXFLAG_COMPILE_AS),)
-	CXXFLAG_COMPILE_AS=
+	ifeq ($(TARGET_MODE),kernel)
+		CXXFLAG_COMPILE_AS:=-TC
+	else
+		CXXFLAG_COMPILE_AS:=
+	endif
 else
 	ifeq ($(filter $(CXXFLAG_COMPILE_AS),-TC -TP -interface -internalPartition -exportHeader),)
 		$(error CXXFLAG_COMPILE_AS ($(CXXFLAG_COMPILE_AS)) is not supported (Options: -TC -TP -interface -internalPartition -exportHeader))
@@ -510,6 +571,7 @@ BUILD_CXX_FLAGS:= \
 	$(CXXFLAG_OMIT_FRAME_POINTER) \
 	$(CXXFLAG_WHOLE_PROGRAM_OPTIMIZATION) \
 	$(CXXFLAG_STD_PREPROCESSOR) \
+	$(CXXFLAG_PREPROCESSOR_DEFINES) \
 	$(CXXFLAG_STR_POLLING) \
 	$(CXXFLAG_MINIMAL_BUILD) \
 	$(CXXFLAG_CPP_EXCEPTIONS) \
@@ -548,7 +610,7 @@ BUILD_CC_FLAGS:=$(filter-out $(CXXFLAG_STD_LIB), $(BUILD_CXX_FLAGS)) $(CFLAG_STD
 #-------------------------------------------#
 
 # Output file name
-LINKFLAG_OUT_FLAGS=-OUT:"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_FULLNAME)"
+LINKFLAG_OUT_FLAGS=-OUT:"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_FILENAME)"
 
 # Incremental linking: debug (yes), release (no)
 ifeq ($(LINKFLAG_INCREMENTAL_LINK),)
@@ -565,25 +627,16 @@ endif
 
 # Incremental Link Database File
 ifeq ($(LINKFLAG_INCREMENTAL_LINK),-INCREMENTAL)
-	LINKFLAG_INCREMENTAL_LINK_DATABASE=-ILK:$(BUILD_INTDIR)/$(TARGET_NAME).ilk
+	LINKFLAG_INCREMENTAL_LINK_DATABASE=-ILK:"$(subst /,\,$(BUILD_INTDIR))\$(TARGET_NAME).ilk"
 endif
 
 #-------------------------------------------#
 #	Input Flags								#
 #-------------------------------------------#
 
-# ignored default lib 
-ifeq ($(TARGET_MODE),kernel)
-	LINKFLAG_NODEFAULTLIB=-NODEFAULTLIB
-else
-	ifeq ($(filter $(TARGET_NODEFAULTLIB),yes true 1),$(TARGET_NODEFAULTLIB))
-		LINKFLAG_NODEFAULTLIB=-NODEFAULTLIB
-	endif
-endif
-
 # def file
 ifneq ($(TARGET_DEF),)
-	LINKFLAG_DEF_FILE=-DEF:"$(TARGET_DEF)"
+	LINKFLAG_DEF_FILE=-DEF:"$(TARGET_ROOT)/$(TARGET_SRCDIR)/$(TARGET_DEF)"
 endif
 
 # defult libs
@@ -591,10 +644,13 @@ ifeq ($(TARGET_MODE),kernel)
 	LINKFLAG_NODEFAULTLIB=-NODEFAULTLIB
 	LINKFLAG_LIBS=fltmgr.lib BufferOverflowK.lib ntoskrnl.lib hal.lib wmilib.lib Ntstrsafe.lib $(TARGET_EXTRA_LIBS)
 else
-	ifeq ($(filter $(TARGET_NODEFAULTLIB),yes true 1),$(TARGET_NODEFAULTLIB))
-		LINKFLAG_NODEFAULTLIB=-NODEFAULTLIB
-		LINKFLAG_LIBS=$(TARGET_EXTRA_LIBS)
-	else
+	ifneq ($(TARGET_NODEFAULTLIB),)
+		ifeq ($(filter $(TARGET_NODEFAULTLIB),yes true 1),$(TARGET_NODEFAULTLIB))
+			LINKFLAG_NODEFAULTLIB=-NODEFAULTLIB
+			LINKFLAG_LIBS=$(TARGET_EXTRA_LIBS)
+		endif
+	endif
+	ifneq ($(LINKFLAG_NODEFAULTLIB),-NODEFAULTLIB)
 		LINKFLAG_LIBS=kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib $(TARGET_EXTRA_LIBS)
 	endif
 endif
@@ -606,7 +662,7 @@ ifeq ($(TARGET_MODE),kernel)
 	LINKFLAG_MANIFEST=-MANIFEST:NO
 else
 	LINKFLAG_MANIFEST=-MANIFEST
-	LINKFLAG_MANIFESTFILE=-MANIFESTFILE:"$(BUILD_INTDIR)/$(TARGET_FULLNAME).intermediate.manifest"
+	LINKFLAG_MANIFESTFILE=-MANIFESTFILE:"$(subst /,\,$(BUILD_INTDIR))\$(TARGET_NAME).intermediate.manifest"
 	ifneq ($(filter $(TARGET_ADMIN_PRIVILEGE),yes true 1),)
 		LINKFLAG_MANIFESTUAC=-MANIFESTUAC:"level='requireAdministrator' uiAccess='false'"
 	else
@@ -628,7 +684,7 @@ else
 endif
 
 ifneq ($(LINKFLAG_DEBUG_INFO),)
-	LINKFLAG_PDB_FILE=-PDB:"$(BUILD_OUTDIR)/$(TARGET_NAME).pdb"
+	LINKFLAG_PDB_FILE=-PDB:"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_NAME).pdb"
 endif
 
 #-------------------------------------------#
@@ -690,15 +746,15 @@ else
 	endif
 endif
 
-# Profile Guided Database
-LINKFLAG_PGD=-PGD:"$(BUILD_INTDIR)/$(TARGET_NAME).pgd"
-
 # Link time code generation
 ifneq ($(LINKFLAG_LTCG),)
 	ifeq ($(filter $(LINKFLAG_LTCG),-LTCG -LTCG:incremental -LTCG:PGInstrument -LTCG:PGOptimize -LTCG:PGUpdate),)
 		$(error LINKFLAG_LTCG ($(LINKFLAG_LTCG)) is not supported (Options: -LTCG -LTCG:incremental -LTCG:PGInstrument -LTCG:PGOptimize -LTCG:PGUpdate))
 	endif
-	LINKFLAG_LTCG_OBJFILE=-LTCGOUT:"$(BUILD_INTDIR)/$(TARGET_NAME).iobj"
+	LINKFLAG_LTCG_OBJFILE=-LTCGOUT:"$(subst /,\,$(BUILD_INTDIR))\$(TARGET_NAME).iobj"
+	ifneq ($(filter $(LINKFLAG_LTCG),-LTCG:PGInstrument -LTCG:PGOptimize),)
+		LINKFLAG_PGD=-PGD:"$(subst /,\,$(BUILD_INTDIR))\$(TARGET_NAME).pgd"
+	endif
 endif
 
 #-------------------------------------------#
@@ -727,7 +783,7 @@ LINKFLAG_DEP=-NXCOMPAT
 
 # Import Library
 ifeq ($(TARGET_TYPE),dll)
-	LINKFLAG_DLL_IMPORTLIB=-DLL -IMPLIB:"$(BUILD_OUTDIR)/$(TARGET_NAME).lib"
+	LINKFLAG_DLL_IMPORTLIB=-DLL -IMPLIB:"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_NAME).lib"
 endif
 
 # Merge section
@@ -786,6 +842,7 @@ BUILD_LINK_FLAGS= \
 	$(LINKFLAG_SET_CHECKSUM) \
 	$(LINKFLAG_DYNAMICBASE) \
 	$(LINKFLAG_DEP) \
+	$(LINKFLAG_DLL_IMPORTLIB) \
 	$(LINKFLAG_SECTION) \
 	$(LINKFLAG_MERGE_SECTION) \
 	$(LINKFLAG_MACHINE) \
@@ -797,6 +854,7 @@ BUILD_LINK_FLAGS= \
 #####################################
 BUILD_LIB_FLAGS= \
 	-NOLOGO \
+	$(BUILD_LIBDIRS) \
 	$(LINKFLAG_MACHINE) \
 	$(LINKFLAG_SUBSYSTEM)
 

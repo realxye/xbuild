@@ -13,15 +13,14 @@ PROJECT_NAME=xsamples
 
 # All static-library targets, they should be built first
 PROJECT_LIBS= \
-	libraries/common
-#	libraries/sampledll \
+	libraries/common \
+	libraries/kutils
 #	libraries/samplecom \
-#	libraries/kutils
 
 # All dynamic-linked-library targets, they should be built secondly
 PROJECT_DLLS= \
-#	libraries/kutils \
-#	kernel/sampledrv
+	libraries/sampledll \
+	kernel/sampledrv
 
 # All the executables should be built after all libraries have been built 
 PROJECT_EXES= \

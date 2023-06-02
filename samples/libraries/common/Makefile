@@ -76,3 +76,6 @@ TARGET_SOURCES= \
 #########################################
 # Include master Makefile
 include $(XBUILDROOT)/make/xmake_master_target.mak
+
+XBUILD_POST_BUILD:
+	@echo "> Post Processing ..."

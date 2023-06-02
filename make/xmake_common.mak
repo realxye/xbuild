@@ -6,6 +6,9 @@
 #
 ########################################################################
 
+# Ensure "all" is global default target
+.DEFAULT_GOAL := all
+
 #-----------------------------------#
 #              Arguments            #
 #-----------------------------------#
@@ -20,13 +23,22 @@
 #		- target: build specific target, generate BUILD_TARGET
 #	[Target Arguments]
 #		- project-root: project root path, generate PROJECT_ROOT
+#		- target-path: target path (relative to project root), generate TARGET_PATH and TARGET_ROOT
 
 BUILD_ARCH:=$(arch)
 BUILD_CONFIG:=$(config)
 BUILD_TOOLSET:=$(toolset)
-BUILD_VERBOSE:=$(verbose)
+ifeq ($(filter $(verbose),true yes 1 debug),$(verbose))
+    BUILD_VERBOSE:=true
+	ifeq ($(verbose),debug)
+        BUILD_VERBOSE_DBG:=true
+	endif
+endif
 BUILD_TARGET:=$(target)
 PROJECT_ROOT:=$(project-root)
+TARGET_PATH:=$(target-path)
+TARGET_ROOT:=$(PROJECT_ROOT)/$(TARGET_PATH)
+
 
 #-----------------------------------#
 #           Common Data             #
