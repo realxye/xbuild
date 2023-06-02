@@ -67,7 +67,7 @@ BUILD_INCDIRS= \
 ifeq ($(TARGET_MODE),kernel)
     BUILD_INCDIRS += \
 		-I"$(WDK_INC_DIR)/km" \
-		-I"$(WDK_INC_DIR)/km"
+		-I"$(WDK_INC_DIR)/km/crt"
 	ifneq ($(WDK_KMDF_INC_DIR),)
         BUILD_INCDIRS += -I"$(WDK_KMDF_INC_DIR)"
 	endif
@@ -614,10 +614,10 @@ LINKFLAG_OUT_FLAGS=-OUT:"$(subst /,\,$(BUILD_OUTDIR))\$(TARGET_FILENAME)"
 
 # Incremental linking: debug (yes), release (no)
 ifeq ($(LINKFLAG_INCREMENTAL_LINK),)
-	ifeq ($(TARGET_CONFIG),release)
-		LINKFLAG_INCREMENTAL_LINK=-INCREMENTAL:NO
-	else
+	ifeq ($(TARGET_CONFIG)$(TARGET_MODE),debuguser)
 		LINKFLAG_INCREMENTAL_LINK=-INCREMENTAL
+	else
+		LINKFLAG_INCREMENTAL_LINK=-INCREMENTAL:NO
 	endif
 else
 	ifeq ($(filter $(LINKFLAG_INCREMENTAL_LINK),-INCREMENTAL -INCREMENTAL:NO),)
@@ -788,7 +788,7 @@ endif
 
 # Merge section
 ifeq ($(TARGET_MODE),kernel)
-    LINKFLAG_SECTION="INIT,d"
+    LINKFLAG_SECTION=-SECTION:"INIT,d"
     LINKFLAG_MERGE_SECTION=-MERGE:"_TEXT=.text;_PAGE=PAGE"
 endif
 
@@ -867,7 +867,7 @@ else ifeq ($(BUILD_ARCH), x86)
     BUILD_RC_FLAGS  += -nologo -D_X86_=1 -Di386=1 -Dx86=1 -DSTD_CALL $(BUILD_INCDIRS)
 endif
 
-ifeq ($(BUILD_MODE),kernel)
+ifeq ($(TARGET_MODE),kernel)
     BUILD_RC_FLAGS  += -I"$(WDK_INC_DIR)/um"
 endif
 
