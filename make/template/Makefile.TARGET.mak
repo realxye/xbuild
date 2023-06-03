@@ -5,17 +5,6 @@
 #                                                                     #
 #######################################################################
 
-# Input Build parameters
-BUILD_TOOLSET=$(BuildToolset)
-BUILD_ARCH=$(BuildArch)
-BUILD_TYPE=$(BuildType)
-BUILD_ROOT=$(BuildRoot)
-TARGET_DIR=$(shell pwd)
-
-ifeq ($(PROJECT_ROOT),)
-	$(error "ProjectRoot is not defined")
-endif
-
 #
 # TARGET
 #
@@ -32,24 +21,42 @@ TARGET_NAME=
 #		kdrv: kernel mode driver
 TARGET_TYPE=
 
-#   - Target dependencies
+#   - Other project modules that Target depends on (Must be modules in same project)
 TARGET_DEPENDS=
 
 #   - Target include directories
 #     Don't add include directory for SDK/WDK/Dependencies
-TARGET_INCDIRS=
+TARGET_EXTRA_INCDIRS=
+
+#   - Target force include files
+TARGET_FORCE_INCLUDES=
 
 #   - Target library directories
 #     Don't add include directory for SDK/WDK/Dependencies
-TARGET_LIBDIRS=
+TARGET_EXTRA_LIBDIRS=
 
 #   - Libraries to be linked
-TARGET_LIBS=
+TARGET_EXTRA_LIBS=
 
-#   - Precompile header
-TARGET_PCH=
+#   - Target definitions
+TARGET_DEFINES=
 
-#   - Soource Files:
+#   - Precompile Header File (e.g. precompile.h)
+TARGET_PRECOMPILE_HEADER=
+
+#   - Ignore warnings
+TARGET_IGNORE_WARNINGS=
+
+#   - Require Admin Privilege
+TARGET_ADMIN_PRIVILEGE=
+
+#   - Warnings as errors
+TARGET_ERROR_WARNINGS=
+
+# By default, 
+TARGET_SRCDIR=src
+
+#   - Source Files:
 #		*.c
 #		*.cxx
 #		*.cc
@@ -61,10 +68,12 @@ TARGET_PCH=
 #		*.idl
 TARGET_SOURCES=
 
-
 #########################################
 #	MASTER MAKEFILE						#
 #	NO TARGET SETTINGS BELOW THIS LINE	#
 #########################################
 # Include master Makefile
-include "$(XBUILDROOT)/make/xmake_master_target.mak"
+include $(XBUILDROOT)/make/xmake_master_target.mak
+
+XBUILD_POST_BUILD:
+	@echo "> Post Processing ..."
