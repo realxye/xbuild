@@ -3,7 +3,7 @@ import re
 import subprocess
 import sys
 import pathlib
-#from pathlib import Path
+import platform
 
 # Global Variables
 kUserHomeDir=pathlib.Path(os.environ["UserProfile"]).as_posix()
@@ -27,13 +27,31 @@ class BuildCommon:
             s = s + v
         return s
     
-    def GetListItem(self, arr, i):
+    def GetListItem(self, arr, i)->str:
         s=""
         if arr == None:
             return ""
         if len(arr) == 0:
             return ""
         return arr[0]
+    
+    def GetHostOS(self)->str:
+        """Get host OS name: Windows, Darwin, Linux"""
+        return platform.system()
+    
+    def GetHostArch(self)->str:
+        """Get host Arch name: x86, x64, arm, arm64"""
+        machine=platform.machine().lower()
+        if machine.startswith('arm'):
+            if machine == "arm":
+                return "arm"
+            else:
+                return "arm64"
+        else:
+            if machine.endswith("64"):
+                return "x64"
+            else:
+                return "x86"
 
 common=BuildCommon()
 
@@ -50,11 +68,29 @@ class BuildToolchain:
         return self.name != "" and self.version != "" and self.path != "" and os.path.isdir(self.path)
 
 class BuildToolchainMSVC(BuildToolchain):
+
+    msvcVersions=[]
+    msvcDefault=""
     
     def __init__(self, ver):
         self.name="MSVC"
         self.version=ver
         self.path=self.queryInstallDir()
+        if not self.path=="":
+            msvcDir=os.path.join(self.path, "VC\\Tools\\MSVC")
+            if not os.path.isdir(msvcDir):
+                return
+            pMsvcVer=re.compile("d+\\.\\d+\\.\\d+")
+            for file in os.listdir(msvcDir):
+                #if not pMsvcVer.match(file):
+                #    continue
+                dVer = os.path.join(msvcDir, file)
+                if not os.path.isdir(dVer):
+                    continue
+                self.msvcVersions.append(file)
+            self.msvcVersions.sort(reverse=True)
+            if len(self.msvcVersions) > 0:
+                self.msvcDefault=self.msvcVersions[0]
 
     def queryInstallDir(self):
         verrange=""
@@ -239,27 +275,44 @@ class BuildInitializer:
                 f.write("#   - Root\n")
                 f.write("export XBUILD_WORKSPACE_ROOT=\"" + kXBuildHomeDir + "\"\n")
                 f.write("\n")
+                f.write("# HOST\n")
+                f.write("export XBUILD_HOST_OSNAME=" + common.GetHostOS() + "\n")
+                f.write("export XBUILD_HOST_OSARCH=" + common.GetHostArch() + "\n")
+                f.write("\n")
                 f.write("# Toochain\n")
-                vsPath=""
+                defaultVS=""
+                # Visual Studio 2017
                 if self.vs2017.Exist():
                     f.write("export XBUILD_TOOLCHAIN_VS2017=\"" + pathlib.Path(self.vs2017.path).as_posix() + "\"\n")
-                    vsPath=pathlib.Path(self.vs2017.path).as_posix()
+                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_VERSIONS=\"" + common.ListToString(self.vs2017.msvcVersions) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_DEFAULT=" + self.vs2017.msvcDefault + "\n")
+                    defaultVS="vs2017"
                 else:
                     f.write("export XBUILD_TOOLCHAIN_VS2017=\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_VERSIONS=\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_DEFAULT=\n")
+                # Visual Studio 2019
                 if self.vs2019.Exist():
                     f.write("export XBUILD_TOOLCHAIN_VS2019=\"" + pathlib.Path(self.vs2019.path).as_posix() + "\"\n")
-                    vsPath=pathlib.Path(self.vs2019.path).as_posix()
+                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_VERSIONS=\"" + common.ListToString(self.vs2019.msvcVersions) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_DEFAULT=" + self.vs2019.msvcDefault + "\n")
+                    defaultVS="vs2019"
                 else:
                     f.write("export XBUILD_TOOLCHAIN_VS2019=\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_VERSIONS=\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_DEFAULT=\n")
+                # Visual Studio 2022
                 if self.vs2022.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2019=\"" + pathlib.Path(self.vs2022.path).as_posix() + "\"\n")
-                    vsPath=pathlib.Path(self.vs2022.path).as_posix()
+                    f.write("export XBUILD_TOOLCHAIN_VS2022=\"" + pathlib.Path(self.vs2022.path).as_posix() + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_VERSIONS=\"" + common.ListToString(self.vs2022.msvcVersions) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_DEFAULT=" + self.vs2022.msvcDefault + "\n")
+                    defaultVS="vs2022"
                 else:
                     f.write("export XBUILD_TOOLCHAIN_VS2022=\n")
-                if vsPath == "":
-                    f.write("export XBUILD_TOOLCHAIN_VS=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS=\"" + vsPath + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_VERSIONS=\n")
+                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_DEFAULT=\n")
+                # Default Visual Studio
+                f.write("export XBUILD_TOOLCHAIN_DEFAULT_VS=" + defaultVS + "\n")
                 f.write("\n")
                 f.write("# WDKs\n")
                 f.write("#   - Root\n")
@@ -448,11 +501,20 @@ def CommandTest(argv:list[str]):
         vs2022 = BuildToolchainMSVC("2022")
         print("Visual Studios")
         if vs2022.Exist():
-            print("    VS2022: " + pathlib.Path(vs2022.path).as_posix())
+            print("    VS2022:")
+            print("      - Path: " + pathlib.Path(vs2022.path).as_posix())
+            print("      - MSVC Versions: " + common.ListToString(vs2022.msvcVersions))
+            print("      - MSVC default: " + vs2022.msvcDefault)
         if vs2019.Exist():
-            print("    VS2019: " + pathlib.Path(vs2019.path).as_posix())
+            print("    VS2019:")
+            print("      - Path: " + pathlib.Path(vs2019.path).as_posix())
+            print("      - MSVC Versions: " + common.ListToString(vs2019.msvcVersions))
+            print("      - MSVC default: " + vs2019.msvcDefault)
         if vs2017.Exist():
-            print("    VS2017: " + pathlib.Path(vs2017.path).as_posix())
+            print("    VS2017:")
+            print("      - Path: " + pathlib.Path(vs2017.path).as_posix())
+            print("      - MSVC Versions: " + common.ListToString(vs2017.msvcVersions))
+            print("      - MSVC default: " + vs2017.msvcDefault)
         winkits = BuildWinKits()
         print("SDKs: " + common.ListToString(winkits.sdks))
         print("DDKs: " + common.ListToString(winkits.ddks))

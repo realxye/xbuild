@@ -10,7 +10,7 @@
 #
 
 #   - Target name
-TARGET_NAME=
+TARGET_NAME=sample
 
 #   - Target type: lib, dll, console, app, klib, kdrv
 #		lib: static library
@@ -19,10 +19,11 @@ TARGET_NAME=
 #		app: executable with GUI
 #		klib: kernel mode static library
 #		kdrv: kernel mode driver
-TARGET_TYPE=
+TARGET_TYPE=app
 
 #   - Other project modules that Target depends on (Must be modules in same project)
-TARGET_DEPENDS=
+TARGET_DEPENDS= \
+    libraries/common
 
 #   - Target include directories
 #     Don't add include directory for SDK/WDK/Dependencies
@@ -36,12 +37,12 @@ TARGET_FORCE_INCLUDES=
 TARGET_EXTRA_LIBDIRS=
 
 #   - Libraries to be linked
-TARGET_EXTRA_LIBS=
+TARGET_EXTRA_LIBS=common.lib
 
 #   - Target definitions
 TARGET_DEFINES=
 
-#   - Precompile Header File (e.g. precompile.h)
+#   - Precompile Header File (e.g. src/pch.h)
 TARGET_PRECOMPILE_HEADER=
 
 #   - Ignore warnings
@@ -66,7 +67,8 @@ TARGET_SRCDIR=src
 #		*.rc
 #		*.manifest
 #		*.idl
-TARGET_SOURCES=
+TARGET_SOURCES= \
+    main.cpp
 
 #########################################
 #	MASTER MAKEFILE						#

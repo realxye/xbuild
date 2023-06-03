@@ -10,7 +10,7 @@
 #
 
 #   - Target name
-TARGET_NAME=
+TARGET_NAME=sampledrv
 
 #   - Target type: lib, dll, console, app, klib, kdrv
 #		lib: static library
@@ -19,10 +19,10 @@ TARGET_NAME=
 #		app: executable with GUI
 #		klib: kernel mode static library
 #		kdrv: kernel mode driver
-TARGET_TYPE=
+TARGET_TYPE=kdrv
 
 #   - Other project modules that Target depends on (Must be modules in same project)
-TARGET_DEPENDS=
+TARGET_DEPENDS=libraries/kutil
 
 #   - Target include directories
 #     Don't add include directory for SDK/WDK/Dependencies
@@ -42,7 +42,7 @@ TARGET_EXTRA_LIBS=
 TARGET_DEFINES=
 
 #   - Precompile Header File (e.g. precompile.h)
-TARGET_PRECOMPILE_HEADER=
+TARGET_PRECOMPILE_HEADER=precompile.h
 
 #   - Ignore warnings
 TARGET_IGNORE_WARNINGS=
@@ -66,7 +66,9 @@ TARGET_SRCDIR=src
 #		*.rc
 #		*.manifest
 #		*.idl
-TARGET_SOURCES=
+TARGET_SOURCES= \
+    sample.c \
+	sample.rc
 
 #########################################
 #	MASTER MAKEFILE						#

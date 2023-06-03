@@ -10,7 +10,7 @@
 #
 
 #   - Target name
-TARGET_NAME=
+TARGET_NAME=common
 
 #   - Target type: lib, dll, console, app, klib, kdrv
 #		lib: static library
@@ -19,7 +19,7 @@ TARGET_NAME=
 #		app: executable with GUI
 #		klib: kernel mode static library
 #		kdrv: kernel mode driver
-TARGET_TYPE=
+TARGET_TYPE=lib
 
 #   - Other project modules that Target depends on (Must be modules in same project)
 TARGET_DEPENDS=
@@ -41,7 +41,7 @@ TARGET_EXTRA_LIBS=
 #   - Target definitions
 TARGET_DEFINES=
 
-#   - Precompile Header File (e.g. precompile.h)
+#   - Precompile Header File (e.g. src/pch.h)
 TARGET_PRECOMPILE_HEADER=
 
 #   - Ignore warnings
@@ -66,7 +66,9 @@ TARGET_SRCDIR=src
 #		*.rc
 #		*.manifest
 #		*.idl
-TARGET_SOURCES=
+TARGET_SOURCES= \
+    util.cpp \
+    version.cpp
 
 #########################################
 #	MASTER MAKEFILE						#
