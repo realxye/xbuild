@@ -28,7 +28,3 @@ PROJECT_TESTS=
 #	NO TARGET SETTINGS BELOW THIS LINE	#
 #########################################
 include "$(XBUILDROOT)/make/xmake_master_project.mak"
-
-#-----------------------------------#
-#           Make Project            #
-#-----------------------------------#

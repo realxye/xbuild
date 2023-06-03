@@ -41,6 +41,9 @@ if [ -f ~/xbuild.alias ]; then
     source ~/xbuild.alias
 fi
 
+# Execute core scripts
+source "$XBUILDROOT/scripts/xbuild-core.sh"
+
 # Export Xbuild Tools
 if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
     export XBUILDMAKE=$XBUILDROOT/tools/make/windows/bin/make.exe
@@ -48,6 +51,27 @@ else
     export XBUILDMAKE=make
 fi
 
+#
+# Fix Mac Bash Color
+#
+if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+    parse_git_branch() {
+        git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+    }
+    #export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+    export CLICOLOR=1
+    export LSCOLORS=ExFxBxDxCxegedabagacad
+    alias ls='ls -GFh'
+fi
+
+#
+# Start ssh-agent
+#
+xbuild-start-ssh
+
+#
+# Print Information
+#
 echo "[XBUILD]"
 echo "  ROOT: $XBUILDROOT"
 echo "  Workspace: $XBUILD_WORKSPACE_ROOT"
