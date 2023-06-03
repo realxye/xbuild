@@ -24,8 +24,8 @@ PROJECT_DLLS= \
 
 # All the executables should be built after all libraries have been built 
 PROJECT_EXES= \
-#	apps/sample \
-#	tools/samplectl
+	apps/sample \
+	tools/samplectl
 
 # All test targets, they should be built at the last
 PROJECT_TESTS= \

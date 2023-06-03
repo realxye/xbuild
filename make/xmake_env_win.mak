@@ -12,7 +12,10 @@ ifeq ($(TARGET_TYPE),lib)
 else ifeq ($(TARGET_TYPE),dll)
     TARGET_SUFFIX=.dll
     TARGET_MODE=user
-else ifeq ($(TARGET_TYPE),exe)
+else ifeq ($(TARGET_TYPE),app)
+    TARGET_SUFFIX=.exe
+    TARGET_MODE=user
+else ifeq ($(TARGET_TYPE),console)
     TARGET_SUFFIX=.exe
     TARGET_MODE=user
 else ifeq ($(TARGET_TYPE),klib)
@@ -22,7 +25,7 @@ else ifeq ($(TARGET_TYPE),kdrv)
     TARGET_SUFFIX=.sys
     TARGET_MODE=kernel
 else
-    $(error Invalid TARGET_TYPE ($(TARGET_TYPE)), TARGET_TYPE must be one of following (lib dll exe klib kdrv))
+    $(error Invalid TARGET_TYPE ($(TARGET_TYPE)), TARGET_TYPE must be one of following (lib dll app console klib kdrv))
 endif
 
 # Target Names

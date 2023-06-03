@@ -65,7 +65,8 @@ XBUILD_ZERO:
 XBUILD_ALL_TARGETS:
 	@echo " " ; \
 	$(foreach Target,$(PROJECT_TARGETS), \
-		echo "> Target: $(Target)" ; \
+		echo " " ; \
+		echo ">>> TARGET <<<: $(Target)" ; \
 		if [ -f "$(PROJECT_ROOT)/$(Target)/Makefile" ] ; then \
 			cd  "$(PROJECT_ROOT)/$(Target)"; \
 			if [ ! -z $(BUILD_VERBOSE) ] ; then \

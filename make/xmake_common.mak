@@ -28,10 +28,12 @@
 BUILD_ARCH:=$(arch)
 BUILD_CONFIG:=$(config)
 BUILD_TOOLSET:=$(toolset)
-ifeq ($(filter $(verbose),true yes 1 debug),$(verbose))
-    BUILD_VERBOSE:=true
-	ifeq ($(verbose),debug)
-        BUILD_VERBOSE_DBG:=true
+ifneq ($(verbose),)
+	ifeq ($(filter $(verbose),true yes 1 debug),$(verbose))
+		BUILD_VERBOSE:=true
+		ifeq ($(verbose),debug)
+			BUILD_VERBOSE_DBG:=true
+		endif
 	endif
 endif
 BUILD_TARGET:=$(target)

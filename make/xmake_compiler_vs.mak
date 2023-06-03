@@ -121,7 +121,7 @@ else
 	endif
 endif
 
-BUILD_LIBDIRS += $(foreach f, $(TARGET_DEPENDS), $(addprefix -LIBPATH:"$(BUILD_OUTROOT)/, $(addsuffix ",$f)))
+BUILD_LIBDIRS += $(foreach f, $(TARGET_DEPENDS), $(addprefix -LIBPATH:"$(BUILD_ROOT)/, $(addsuffix ",$f)))
 BUILD_LIBDIRS += $(foreach f, $(TARGET_EXTRA_LIBDIRS), $(addprefix -LIBPATH:", $(addsuffix ",$f)))
 
 #####################################
@@ -321,11 +321,17 @@ else
 endif
 
 # Run-time Library: default = MT
-ifeq ($(CXXFLAG_RUNTIME_LIB),)
-    CXXFLAG_RUNTIME_LIB=-MT
+ifeq ($(TARGET_RUNTIME_LIB),)
+    TARGET_RUNTIME_LIB=-MT
+else
+	ifeq ($(filter $(TARGET_RUNTIME_LIB),-MT -MD),)
+		$(error TARGET_RUNTIME_LIB ($(TARGET_RUNTIME_LIB)) is not supported (Options: -MT -MD))
+	endif
 endif
 ifeq ($(BUILD_CONFIG), debug)
-	CXXFLAG_RUNTIME_LIB=$(addsuffix d, $(CXXFLAG_RUNTIME_LIB))
+	CXXFLAG_RUNTIME_LIB:=$(addsuffix d, $(TARGET_RUNTIME_LIB))
+else
+	CXXFLAG_RUNTIME_LIB:=$(TARGET_RUNTIME_LIB)
 endif
 
 # Security Check: default = Yes
@@ -478,7 +484,11 @@ endif
 
 # Calling convention: __cdecl (Gd), __fastcall (Gr), __stdcall (Gz), __vectorcall (Gv)
 ifeq ($(CXXFLAG_CALLING_CONVENTION),)
+	ifeq ($(TARGET_MODE),kernel)
+	CXXFLAG_CALLING_CONVENTION=-Gz
+	else
 	CXXFLAG_CALLING_CONVENTION=-Gd
+	endif
 else
 	ifeq ($(filter $(CXXFLAG_CALLING_CONVENTION),-Gd -Gr -Gz -Gv),)
 		$(error CXXFLAG_CALLING_CONVENTION ($(CXXFLAG_CALLING_CONVENTION)) is not supported (Options: -Gd -Gr -Gz -Gv))
