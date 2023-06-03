@@ -37,19 +37,13 @@ XBuildGetWinDir()
     dir=`cmd.exe /c "echo %SystemRoot%"`
     echo `XBuildWinPathToUnixPath $dir`
 }
-export XBUILD_WINDIR_ROOT=`echo \`XBuildGetWinDir\``
+#export XBUILD_WINDIR_ROOT=`echo \`XBuildGetWinDir\``
 
 XBuildGetWinDrive()
 {
     echo ${XBUILD_WINDIR_ROOT:0:2}
 }
-export XBUILD_WINDIR_DRIVE=`echo \`XBuildGetWinDrive\``
-
-XBuildGetWinProgramFiles()
-{
-    echo "$XBUILD_WINDIR_DRIVE/Program Files"
-}
-export XBUILD_WINDIR_PROGRAM=`echo \`XBuildGetWinProgramFiles\``
+#export XBUILD_WINDIR_PROGRAM=`echo \`XBuildGetWinProgramFiles\``
 
 XBuildGetWinProgramFiles86()
 {
@@ -59,7 +53,7 @@ XBuildGetWinProgramFiles86()
         echo "$XBUILD_WINDIR_DRIVE/Program Files"
     fi
 }
-export XBUILD_WINDIR_PROGRAM86=`echo \`XBuildGetWinProgramFiles86\``
+#export XBUILD_WINDIR_PROGRAM86=`echo \`XBuildGetWinProgramFiles86\``
 
 #----------------------------------------------------
 # Get Windows Build Tools
@@ -93,9 +87,9 @@ XBuildGetVSRootDir()
     fi
 }
 
-export XBUILD_VS17_ROOT=`echo \`XBuildGetVSRootDir 2022\``
-export XBUILD_VS16_ROOT=`echo \`XBuildGetVSRootDir 2019\``
-export XBUILD_VS15_ROOT=`echo \`XBuildGetVSRootDir 2017\``
+#export XBUILD_VS17_ROOT=`echo \`XBuildGetVSRootDir 2022\``
+#export XBUILD_VS16_ROOT=`echo \`XBuildGetVSRootDir 2019\``
+#export XBUILD_VS15_ROOT=`echo \`XBuildGetVSRootDir 2017\``
 
 #----------------------------------------------------
 # Get Windows Kits (SDKs and DDKs)
@@ -114,7 +108,7 @@ XBuildGetSDK10Versions()
     fi
     echo $result
 }
-export XBUILD_WINSDK10_VERSIONS=`echo \`XBuildGetSDK10Versions\``
+#export XBUILD_WINSDK10_VERSIONS=`echo \`XBuildGetSDK10Versions\``
 
 XBuildGetSDK10LatestVersion()
 {
@@ -122,7 +116,7 @@ XBuildGetSDK10LatestVersion()
     arr=($versions)
     echo ${arr[0]}
 }
-export XBUILD_WINSDK10_DEFAULT_VERSION=`echo \`XBuildGetSDK10LatestVersion\``
+#export XBUILD_WINSDK10_DEFAULT_VERSION=`echo \`XBuildGetSDK10LatestVersion\``
 
 # Get Windows Kits (DDK only) versions
 XBuildGetDDK10Versions()
@@ -137,7 +131,7 @@ XBuildGetDDK10Versions()
     fi
     echo $result
 }
-export XBUILD_WINDDK10_VERSIONS=`echo \`XBuildGetDDK10Versions\``
+#export XBUILD_WINDDK10_VERSIONS=`echo \`XBuildGetDDK10Versions\``
 
 XBuildGetDDK10LatestVersion()
 {
@@ -145,7 +139,7 @@ XBuildGetDDK10LatestVersion()
     arr=($versions)
     echo ${arr[0]}
 }
-export XBUILD_WINDDK10_DEFAULT_VERSION=`echo \`XBuildGetDDK10LatestVersion\``
+#export XBUILD_WINDDK10_DEFAULT_VERSION=`echo \`XBuildGetDDK10LatestVersion\``
 #export XBUILD_WINDDK10_DEFAULT_BIN=$XBUILD_WINDIR_PROGRAM86/Windows Kits/10/bin/$XBUILD_WINDDK10_DEFAULT_VERSION
 #export XBUILD_WINDDK10_DEFAULT_INC=$XBUILD_WINDIR_PROGRAM86/Windows Kits/10/Include/$XBUILD_WINDDK10_DEFAULT_VERSION
 #export XBUILD_WINDDK10_DEFAULT_LIB=$XBUILD_WINDIR_PROGRAM86/Windows Kits/10/Lib/$XBUILD_WINDDK10_DEFAULT_VERSION
@@ -163,7 +157,7 @@ XBuildGetKmdfVersions()
     fi
     echo $result
 }
-export XBUILD_WINSDK10_KMDF_VERSIONS=`echo \`XBuildGetKmdfVersions\``
+#export XBUILD_WINSDK10_KMDF_VERSIONS=`echo \`XBuildGetKmdfVersions\``
 
 XBuildGetKmdfLatestVersion()
 {
@@ -171,7 +165,7 @@ XBuildGetKmdfLatestVersion()
     arr=($versions)
     echo ${arr[0]}
 }
-export XBUILD_WINSDK10_KMDF_DEFAULT_VERSION=`echo \`XBuildGetKmdfLatestVersion\``
+#export XBUILD_WINSDK10_KMDF_DEFAULT_VERSION=`echo \`XBuildGetKmdfLatestVersion\``
 
 # Get Windows SDK UMDF
 XBuildGetUmdfVersions()
@@ -186,7 +180,7 @@ XBuildGetUmdfVersions()
     fi
     echo $result
 }
-export XBUILD_WINSDK10_UMDF_VERSIONS=`echo \`XBuildGetUmdfVersions\``
+#export XBUILD_WINSDK10_UMDF_VERSIONS=`echo \`XBuildGetUmdfVersions\``
 
 XBuildGetUmdfLatestVersion()
 {
@@ -194,7 +188,7 @@ XBuildGetUmdfLatestVersion()
     arr=($versions)
     echo ${arr[0]}
 }
-export XBUILD_WINSDK10_UMDF_DEFAULT_VERSION=`echo \`XBuildGetUmdfLatestVersion\``
+#export XBUILD_WINSDK10_UMDF_DEFAULT_VERSION=`echo \`XBuildGetUmdfLatestVersion\``
 
 #----------------------------------------------------
 # FINALLY: Print Information
@@ -221,4 +215,4 @@ XBuildWindowsInfo()
     echo "  - Default KMDF:    $XBUILD_WINSDK10_KMDF_DEFAULT_VERSION" >&2
 }
 # Print
-(XBuildWindowsInfo)
+#(XBuildWindowsInfo)
