@@ -260,13 +260,24 @@ class BuildInitializer:
         self.winkits = BuildWinKits()
 
     def Create(self, target):
+        result = 0
         if target == None or target == "profile":
-            self.CreateProfile()
+            result = self.CreateProfile()
+            if result  != 0:
+                return
         if target == None or target == "alias":
-            self.CreateAlias()
+            result = self.CreateAlias()
+            if result  != 0:
+                return
+        print("SUCCEEDED: xbuild has been initialized. Extra steps:")
+        print("  - (Optional) Edit '~/xbuild.profile' to set extra environment variables (e.g. set default workspace path)")
+        print("  - (Optional) Edit '~/xbuild.alias' to add your own alias")
+        print("  - (Optional) Use 'xbuild-help` command to get more information")
+        print("  - Run 'source xbuild.bashrc' to upate current bash session (or simply restart bash)")
 
     def CreateProfile(self):
         file = os.path.join(self.userHomeDir, "xbuild.profile")
+        ret = 0
         try:
             with open(file, 'w') as f:
                 f.write("# XBuild user profile\n")
@@ -353,12 +364,15 @@ class BuildInitializer:
                 f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm64) + "\"\n")
                 f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm64, 0) + "\n")
         except FileNotFoundError:
-            print("Fail to create xbuild profile")
+            print("Fail to create xbuild environment profile")
+            ret = 1
+        return ret
             
     def CreateAlias(self):
         file = os.path.join(self.userHomeDir, "xbuild.alias")
+        ret = 0
         if os.path.isfile(file):
-            return
+            return ret
         try:
             with open(file, 'w') as f:
                 f.write("# XBuild alias profile\n")
@@ -391,7 +405,9 @@ class BuildInitializer:
                 f.write("alias gitundocommit='git reset --soft HEAD~1'\n")
                 f.write("alias gitdropcommit='git reset --hard HEAD~1'\n")
         except FileNotFoundError:
-            print("Fail to create xbuild profile")
+            ret = 1
+            print("Fail to create xbuild alias profile file")
+        return ret
 
 class Helper:
     def __init__(self):
@@ -405,8 +421,6 @@ class Helper:
         print("         Show help information for specific command")
         print("COMMAND: init [--reset]")
         print("         Initialize XBUILD. It must be called once before using xbuild")
-        print("COMMAND: create [--reset]")
-        print("         Initialize XBUILD. It must be called once before using xbuild")
     
     def HelpBasic():
         print("XBuild Help")
@@ -414,7 +428,6 @@ class Helper:
         print("Available COMMANDs:")
         print("  help [COMMAND]: show help information.")
         print("  init [--reset]: initialize XBUILD. It must be called once before using xbuild")
-        print("  create <project|module>: create TARGET (project or module)")
 
 def CommandInit(argv:list[str]):
     argc=GetArgc(argv)
@@ -423,25 +436,6 @@ def CommandInit(argv:list[str]):
         target = argv[0]
     initializer=BuildInitializer()
     initializer.Create(target)
-
-def CommandCreate(argv:list[str]):
-    argc=GetArgc(argv)
-    target = None
-    if argc > 0:
-        print("TARGET not found for create command, please try:\n  xbuild create <project|module> [OPTIONS]")
-        print("  xbuild create project <NAME>")
-        print("  xbuild create module <NAME> <TYPE: lib|dll|exe|drv|klib>")
-        return
-
-def CommandCreateProject(argv:list[str]):
-    argc=GetArgc(argv)
-    if argc == 0:
-        return
-
-def CommandCreatModule(argv:list[str]):
-    argc=GetArgc(argv)
-    if argc == 0:
-        return
 
 def CommandQuery(argv:list[str]):
     argc=GetArgc(argv)
@@ -553,8 +547,6 @@ def main():
         CommandQuery(args[1:])
     elif args[0] == "init":
         CommandInit(args[1:])
-    elif args[0] == "create":
-        CommandCreate(args[1:])
     else:
         CommandHelp(None)
 

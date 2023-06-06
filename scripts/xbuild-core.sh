@@ -111,19 +111,24 @@ xbuild-start-ssh()
 xbuild-create()
 {
     if [ $1. == . ]; then
-        echo "ERROR: parameter 1 (TYPE) is not set, try \"XBuildCreate <project|module> <name> \""
+        echo "ERROR: parameter 1 (TYPE) is not set, try \"xbuild-create <project|module> <name> [--force] \""
         return
     fi
     
     if [ $2. == . ]; then
-        echo "ERROR: parameter 2 (NAME) is not set, try \"XBuildCreate <project|module> <name> \""
+        echo "ERROR: parameter 2 (NAME) is not set, try \"xbuild-create <project|module> <name> [--force] \""
         return
     fi
 
     if [ $1. == project. ]; then
         # Create project folder if it doesn't exist
         if [ -d $2 ]; then
-            echo "WARNING: target folder already exist"
+            if [ $3. == --force. ]; then
+                echo "INFO: target folder ($2) already exist"
+            else
+                echo "ERROR: target folder ($2) already exist"
+                return
+            fi
         else
             mkdir $2 || return
         fi
@@ -137,7 +142,11 @@ xbuild-create()
         if [ ! -f $2/.gitignore ]; then
             cp $XBUILDROOT/make/template/gitignore.txt $2/.gitignore
         else
-            echo "WARNING: target folder already exist"
+            if [ $3. == --force. ]; then
+                echo "WARNING: existing target file ($2/.gitignore) has been overwritten"
+            else
+                echo "INFO: target file ($2/.gitignore) already exist"
+            fi
         fi
     elif [ $1. == module. ]; then
         if [ -d $2 ]; then

@@ -38,19 +38,57 @@ git clone --recurse-submodules git@github.com:realxye/xbuild.git
 
 ### Initialization
 
-Before use xbuild, execute following command in Git Bash:
+Before use xbuild, execute following command in Git Bash to initialize xbuild and generate proper profiles.
 
 ```bash
-source <xbuild-root-dir>/xbuild.bashrc
+cd <xbuild-root-dir>
+python xbuild.py
 ```
 
-This script will initialize xbuild and set proper environment values.
+After xbuild get initialized, restart bash or run command to launch `xbuild` to current bash environment:
 
-### Update XBUILD Profile
+```bash
+source xbuild.bashrc
+```
 
-When system environment is changed, execute above command can also update xbuild profile.
+### Update XBUILD Profiles
 
-## Create Target Project
+When system environment is changed, execute following command to update xbuild profile.
+
+```bash
+cdx
+source xbuild.bashrc
+```
+
+## Create Project
+
+### Project
+
+A project includes project `Makefile` and one or more `modules`.
+
+```
+    PROJECT ROOT
+    |---- Makefile
+    |---- Module1
+            |---- ...
+    |---- Module2
+            |---- ...
+    |---- Module3
+            |---- ...
+    |---- Tests
+            |---- TestModule1
+            |---- TestModule2
+```
+
+To create a project, use following command:
+
+```bash
+xbuild-create project <PROJECT-NAME> [--force]
+```
+
+The `--force` option will force to create project even the folder or file with the same name already exist.
+
+_Check [`xbuild/samples`](xbuild/samples) for more information_
 
 ### Module
 
@@ -63,60 +101,27 @@ Every single module must follow a specific folder structure:
     |---- [include]/
 ```
 
-To create a single target project, use following command:
+To create a module for existing project, execute following command at project root directory:
 
 ```bash
-xbuild create-module <MODULE-NAME> <MODULE-TYPE>
+xbuild-create module <MODULE-NAME>
 ```
 
-### Project
-
-A project includes one or more modules.
-
-```
-    PROJECT ROOT
-    |---- ProjectSettings.txt
-    |---- Module1
-            |---- ...
-    |---- Module2
-            |---- ...
-    |---- Module3
-            |---- ...
-    |---- Tests
-            |---- Test1
-                    |---- Makefile
-                    |---- src/
-                    |---- [include]/
-            |---- Test2
-                    |---- Makefile
-                    |---- src/
-                    |---- [include]/
-```
-
-To create a project, use following command:
-
-```bash
-xbuild create-project <PROJECT-NAME>
-```
-
-Then you can add modules using xbuild command.
+_Check [`xbuild/samples`](xbuild/samples) for more information_
 
 ### Build
 
-To build target project, run following command:
+To build target project, run following command in project's root directory:
 
 ```
-xbuild build [--debug|--release] [--x86|--x64] [--target NAME] [--rebuild]
+xmake config=<release|debug> arch=<x86|x64|arm|arm64> [target=PATH-TO-SUB-MODULE]
 ```
 
 | Options | Description |
 |---|---|
-| --debug | Build configuration is `debug`, it cannot be used with other configuration options |
-| --release | Build configuration is `release`, it cannot be used with other configuration options |
-| --x86 | Build architecture is `x86`, it cannot be used with other architecture options |
-| --x64 | Build architecture is `x64`, it cannot be used with other architecture options |
-| --target NAME | Valid only in multiple targets project, only build specified target instead of all targets |
-| --rebuild | Rebuild target(s) |
+| **config** | Build configuration should be `debug` or `release` |
+| **arch** | Build architecture should be `x86`, `x64`, `arm` or `arm64` |
+| **target** | The sub-module target path, if `target` present, only specified sub-module will be built |
 |   |   |
 
 ### Clean
@@ -124,16 +129,16 @@ xbuild build [--debug|--release] [--x86|--x64] [--target NAME] [--rebuild]
 To clean project, run following command:
 
 ```
-xbuild clean [--debug|--release] [--x86|--x64] [--target NAME]
+xbuild clean config=<release|debug> arch=<x86|x64|arm|arm64> [target=PATH-TO-SUB-MODULE]
 ```
 
 | Options | Description |
 |---|---|
-| --debug | Build configuration is `debug`, it cannot be used with other configuration options |
-| --release | Build configuration is `release`, it cannot be used with other configuration options |
-| --x86 | Build architecture is `x86`, it cannot be used with other architecture options |
-| --x64 | Build architecture is `x64`, it cannot be used with other architecture options |
-| --target NAME | Valid only in multiple targets project, only clean specified target instead of all targets. If it is not set, clean all targets |
+| **config** | Build configuration should be `debug` or `release` |
+| **arch** | Build architecture should be `x86`, `x64`, `arm` or `arm64` |
+| **target** | The sub-module target path, if `target` present, only specified sub-module will be cleaned |
 |   |   |
 
 ## Commands Reference
+
+TBD
