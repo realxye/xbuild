@@ -88,7 +88,7 @@ xbuild-create project <PROJECT-NAME> [--force]
 
 The `--force` option will force to create project even the folder or file with the same name already exist.
 
-_Check [`xbuild/samples`](xbuild/samples) for more information_
+_Check [`xbuild/samples`](samples/README.md) for more information_
 
 ### Module
 
@@ -107,7 +107,7 @@ To create a module for existing project, execute following command at project ro
 xbuild-create module <MODULE-NAME>
 ```
 
-_Check [`xbuild/samples`](xbuild/samples) for more information_
+_Check [`xbuild/samples`](samples/README.md) for more information_
 
 ### Build
 
