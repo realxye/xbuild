@@ -108,6 +108,171 @@ xbuild-start-ssh()
     echo "SSH agent is running"
 }
 
+xbuild-hostpassword()
+{
+    KEY=`echo -n $USERNAME@$HOSTNAME | md5sum`
+    KEYARRAY=($KEY)
+    echo ${KEYARRAY[0]}
+}
+
+xbuild-encrypt()
+{
+    if [ $1. == . ]; then
+        echo "ERROR: parameter 1 (SOURCE) is not set, try \"xbuild-encrypt <source> [encrypted-file] \""
+        return
+    fi
+
+    if [ ! -f $1 ]; then
+        echo "ERROR: parameter 1 (SOURCE) is not a valid file"
+        return
+    fi
+
+    INFILE=$1
+
+    if [ $2. == . ]; then
+        OUTFILE=$1.enc
+    else
+        if [ -f $2 ]; then
+            echo "ERROR: parameter 2 (OUTFILE) already exist"
+            return
+        fi
+        OUTFILE=$2
+    fi
+
+    PSWD=`xbuild-hostpassword`
+    openssl aes-256-cbc -a -salt -pbkdf2 -pass pass:$PSWD -in $INFILE -out $OUTFILE
+}
+
+xbuild-decrypt()
+{
+    if [ $1. == . ]; then
+        echo "ERROR: parameter 1 (SOURCE) is not set, try \"xbuild-decrypt <source> [decrypted-file] \""
+        return
+    fi
+
+    if [ ! -f $1 ]; then
+        echo "ERROR: parameter 1 (SOURCE) is not a valid file"
+        return
+    fi
+
+    INFILE=$1
+
+    if [ $2. == . ]; then
+        OUTFILE=$1.new
+    else
+        if [ -f $2 ]; then
+            echo "ERROR: parameter 2 (OUTFILE) already exist"
+            return
+        fi
+        OUTFILE=$2
+    fi
+
+    PSWD=`xbuild-hostpassword`
+    openssl aes-256-cbc -d -a -pbkdf2 -pass pass:$PSWD -in $INFILE -out $OUTFILE
+}
+
+xbuild-gencert()
+{
+    if [ $1. == . ]; then
+        KEYNAME=xbuild
+    else
+        KEYNAME=$1
+    fi
+
+    PRIKEY=$KEYNAME-private.key
+    PUBCERT=$KEYNAME-cert.pem
+    PFXCERT=$KEYNAME.pfx
+
+    if [ -f $PRIKEY ]; then
+        echo "ERROR: $PRIKEY already exist"
+        return
+    fi
+    if [ -f $PUBCERT ]; then
+        echo "ERROR: $PUBCERT already exist"
+        return
+    fi
+    if [ -f $PFXCERT ]; then
+        echo "ERROR: $PFXCERT already exist"
+        return
+    fi
+
+    PSWD=`xbuild-hostpassword`
+
+    # generate private RSA key and public certificate
+    openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout $PRIKEY -out $PUBCERT -subj "/C=US/ST=California/L=San Mateo/O=XBUILD/OU=$HOSTNAME/CN=$USERNAME/emailAddress=$USERNAME@$HOSTNAME"
+    if [ ! -f $PRIKEY ]; then
+        echo "ERROR: Fail to create private key: $PRIKEY"
+        return
+    fi
+    if [ ! -f $PUBCERT ]; then
+        echo "ERROR: Fail to create certificate: $PUBCERT"
+        return
+    fi
+
+    # generate PFX file
+    openssl pkcs12 -export -out $PFXCERT -inkey $PRIKEY --passout pass:$PSWD -in $PUBCERT
+    if [ ! -f $PFXCERT ]; then
+        echo "ERROR: Fail to create PFX file: $PFXCERT"
+        rm $PRIKEY
+        rm $PUBCERT
+        return
+    fi
+
+    echo "SUCCEEDED: PFX key ($PFXCERT) has been created successfully"
+}
+
+# Convert unix path to dos path
+xbuild-unix2dospath()
+{
+    if [ "$1." == "." ]; then
+        echo "$1"
+        return
+    fi
+
+    UNIXPATH=$1
+    
+    if [ ${UNIXPATH:0:1}. == /. ]; then
+        if [ ${UNIXPATH:2:1}. == /. ]; then
+            DRIVE=`xbuild-upper ${UNIXPATH:1:1}`
+            echo "$DRIVE:${UNIXPATH:2}"
+            return
+        fi
+    fi
+    
+    # Otherwise, it is not unix-style Windows Path
+    echo "$1"
+}
+
+xbuild-sign()
+{
+    if [ "$1." == "." ]; then
+        echo "ERROR: target file parameter not set. Try 'xbuild-sign <file>'"
+        return
+    fi
+    if [ ! -f "$1" ]; then
+        echo "ERROR: target file does not exist"
+        return
+    fi
+    if [ $XBUILD_HOST_PASSWORD. == . ]; then
+        echo "ERROR: Password not found"
+    fi
+    PFXCERT=`echo ~/xbuild-host.pfx`
+    PFXCERT_DOS=`xbuild-unix2dospath "$PFXCERT"`
+    if [ ! -f ~/xbuild-host.pfx ]; then
+        echo "ERROR: PFX Certificate (~/xbuild-host.pfx) not found"
+        return
+    fi
+
+    SIGNTOOL=$XBUILD_TOOLCHAIN_WDKROOT/bin/$XBUILD_TOOLCHAIN_SDK_DEFAULT/x64/signtool.exe
+    if [ ! -f "$SIGNTOOL" ]; then
+        echo "ERROR: SignTool (\"$SIGNTOOL\") not found"
+        return
+    fi
+
+    echo "\"$SIGNTOOL\" sign /f \"$PFXCERT_DOS\" /fd SHA256 /p $XBUILD_HOST_PASSWORD \" $1\""
+    "$SIGNTOOL" sign /f "$PFXCERT_DOS" /fd SHA256 /p $XBUILD_HOST_PASSWORD "$1"
+}
+
 xbuild-create()
 {
     if [ $1. == . ]; then
