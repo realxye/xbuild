@@ -70,6 +70,20 @@ fi
 xbuild-start-ssh
 
 #
+# Disable MINGWIN auto path conversion
+#
+export MSYS_NO_PATHCONV=1
+XBUILD_HOST_PASSWORD=`xbuild-hostpassword`
+
+if [ ! -f ~/xbuild-host.pfx ]; then
+    cd ~/
+    xbuild-gencert xbuild-host
+    if [ -f xbuild-host.pfx ]; then
+    fi
+    cdx
+fi
+
+#
 # Print Information
 #
 echo "[XBUILD]"
