@@ -263,11 +263,11 @@ class BuildInitializer:
         result = 0
         if target == None or target == "profile":
             result = self.CreateProfile()
-            if result  != 0:
+            if result != 0:
                 return
         if target == None or target == "alias":
             result = self.CreateAlias()
-            if result  != 0:
+            if result != 0:
                 return
         print("SUCCEEDED: xbuild has been initialized. Extra steps:")
         print("  - (Optional) Edit '~/xbuild.profile' to set extra environment variables (e.g. set default workspace path)")

@@ -199,7 +199,7 @@ xbuild-gencert()
     PSWD=`xbuild-hostpassword`
 
     # generate private RSA key and public certificate
-    openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout $PRIKEY -out $PUBCERT -subj "/C=US/ST=California/L=San Mateo/O=XBUILD/OU=$HOSTNAME/CN=$USERNAME/emailAddress=$USERNAME@$HOSTNAME"
+    openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout $PRIKEY -out $PUBCERT -subj "/C=US/ST=California/L=San Mateo/O=XBUILD/OU=$HOSTNAME/CN=$USERNAME.$HOSTNAME/emailAddress=$USERNAME@$HOSTNAME"
     if [ ! -f $PRIKEY ]; then
         echo "ERROR: Fail to create private key: $PRIKEY"
         return
