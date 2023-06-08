@@ -138,10 +138,6 @@ if [ "$XBUILD_WORKSPACE_ROOT" == "$XBUILDROOT" ]; then
     echo "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\""
 fi
 
-if [ -f xbuild-host.pfx ]; then
-    echo "ERROR: Fail to generate xbuild-host.pfx"
-fi
-
 if [ "$XBUILD_HOST_PFX" == "created" ]; then
     echo "TODO: XBUILD create host certificate file '~/xbuild-host.pfx', please add it to your system cert store ..."
 fi
