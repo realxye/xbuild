@@ -115,7 +115,11 @@ echo "  KMDF (x86): $XBUILD_TOOLCHAIN_KMDF_X86_DEFAULT"
 echo "  KMDF (x64): $XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT"
 echo "  KMDF (arm): $XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT"
 echo "  KMDF (arm64): $XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT"
+echo " "
 
+#
+# Post checking
+#
 if [ "$XBUILD_TOOLCHAIN_DEFAULT_VS" == "" ]; then
     echo "XBUILD Warning: Visual Studio not found"
 fi
@@ -138,6 +142,13 @@ if [ "$XBUILD_WORKSPACE_ROOT" == "$XBUILDROOT" ]; then
     echo "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\""
 fi
 
-if [ "$XBUILD_HOST_PFX" == "created" ]; then
-    echo "TODO: XBUILD create host certificate file '~/xbuild-host.pfx', please add it to your system cert store ..."
+if [ -f ~/xbuild-host.pfx ]; then
+    HOST_VERT_IN_STORE=`xbuild-findcert`
+    #echo "HOST_VERT_IN_STORE=$HOST_VERT_IN_STORE"
+    if [ "$HOST_VERT_IN_STORE" == "" ]; then
+        echo "XBUILD Warning: XBUILD host certificate file '~/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..."
+        # Following command require Admin privilege
+        # certutil.exe -addstore "Root" C:/Users/engineer/xbuild-host-cert.pem
+        # certutil.exe -importpfx ~/xbuild-host.pfx
+    fi
 fi

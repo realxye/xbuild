@@ -197,9 +197,11 @@ xbuild-gencert()
     fi
 
     PSWD=`xbuild-hostpassword`
+    OU_NAME=`xbuild-lower $HOSTNAME`
+    CN_NAME=`xbuild-lower $USERNAME.$HOSTNAME`
 
     # generate private RSA key and public certificate
-    openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout $PRIKEY -out $PUBCERT -subj "/C=US/ST=California/L=San Mateo/O=XBUILD/OU=$HOSTNAME/CN=$USERNAME.$HOSTNAME/emailAddress=$USERNAME@$HOSTNAME"
+    openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout $PRIKEY -out $PUBCERT -subj "/C=US/ST=California/L=San Mateo/O=XBUILD/OU=$OU_NAME/CN=$CN_NAME"
     if [ ! -f $PRIKEY ]; then
         echo "ERROR: Fail to create private key: $PRIKEY"
         return
@@ -219,6 +221,15 @@ xbuild-gencert()
     fi
 
     echo "SUCCEEDED: PFX key ($PFXCERT) has been created successfully"
+}
+
+xbuild-findcert()
+{
+    CERTUTIL=certutil.exe
+    CN_NAME=`xbuild-lower $USERNAME.$HOSTNAME`
+    CERTFILTER="Issuer: CN=$CN_NAME"
+    CERTRESULT=`$CERTUTIL -store ROOT | grep "$CERTFILTER"`
+    echo -n "$CERTRESULT"
 }
 
 # Convert unix path to dos path
