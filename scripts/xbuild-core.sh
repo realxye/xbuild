@@ -22,6 +22,17 @@ xbuild-upper()
     echo "$1" | sed "y/abcdefghijklmnopqrstuvwxyz/ABCDEFGHIJKLMNOPQRSTUVWXYZ/"
 }
 
+# Upper-case string
+xbuild-get-filename()
+{
+    echo "$1" | sed 's#.*/##'
+}
+
+xbuild-get-dirname()
+{
+    echo "$1" | sed 's#/[^/]*$##'
+}
+
 # Get and export os name, currently xbuild only supports following OS
 #    - Windows
 #    - Linux
@@ -106,6 +117,24 @@ xbuild-start-ssh()
         done
     fi
     echo "SSH agent is running"
+}
+
+xbuild-getgitroot()
+{
+    GIT_EXEC_DIR=`git --exec-path`
+    if [ ! -d "$GIT_EXEC_DIR0" ]; then
+        return
+    fi
+    while [ -d "$GIT_EXEC_DIR" ] && [ ! "$GIT_EXEC_DIR" == "/" ]
+    do
+        DIR_NAME=`xbuild-get-filename "$GIT_EXEC_DIR"`
+        DIR_PARENT=`xbuild-get-dirname "$GIT_EXEC_DIR"`
+        if [ "$DIR_NAME" == "Git" ]; then
+            echo "$GIT_EXEC_DIR"
+            return
+        fi
+        GIT_EXEC_DIR=$DIR_PARENT
+    done
 }
 
 xbuild-hostpassword()

@@ -152,3 +152,17 @@ if [ -f ~/xbuild-host.pfx ]; then
         # certutil.exe -importpfx ~/xbuild-host.pfx
     fi
 fi
+
+
+# Ensure Git is installed and make is copied
+XBUILD_GIT_ROOT=`xbuild-getgitroot`
+if [ "$XBUILD_GIT_ROOT" == "" ]; then
+    echo "XBUILD Warning: Git is not found"
+else
+    if [ $XBUILD_HOST_OSNAME == Windows ]; then
+        if [ ! -f "$XBUILD_GIT_ROOT/usr/bin/make.exe" ]; then
+            echo "XBUILD Warning: make.exe is not found in Git, copy xbuild make to Git"
+            cp "$XBUILDROOT/tools/make/windows/bin/make.exe" "$XBUILD_GIT_ROOT/usr/bin/make.exe" || echo "ERROR: Fail to copy, try command: 'cp \"$XBUILDROOT/tools/make/windows/bin/make.exe\" \"$XBUILD_GIT_ROOT/usr/bin/make.exe\"'"
+        fi
+    fi
+fi
