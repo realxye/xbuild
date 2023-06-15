@@ -59,14 +59,14 @@ export BASHCOLOR_ITALIC_WHITE="\e[3;97m"
 
 # Check XBuild profile
 if [ ! -f ~/xbuild.profile ]; then
-    printf "XBuild profile doesn't exist, try to initialize xbuild ... "
+    xbuild-print "XBuild profile doesn't exist, try to initialize xbuild ... "
     # Create xbuild user profiles: ~/xbuild.profile, ~/xbuild.alias
     $( python xbuild.py init >/dev/null 2>&1)
     #$( touch ~/xbuild.profile >/dev/null 2>&1 )
     if [ -f ~/xbuild.profile ]; then
-        printf "Done\n"
+        xbuild-print "Done"
     else
-        printf "Failed\n"
+        xbuild-print "Failed" red b
         return
     fi
 else
@@ -133,12 +133,15 @@ if [ ! -f ~/xbuild-host.pfx ]; then
     if [ -f xbuild-host.pfx ]; then
         XBUILD_HOST_PFX=created
     else
-        echo "ERROR: Fail to generate xbuild-host.pfx"
+        xbuild-print "ERROR: Fail to generate xbuild-host.pfx" red b
     fi
     cdx
 else
     XBUILD_HOST_PFX=found
 fi
+
+# Get Git root
+XBUILD_GIT_ROOT=`xbuild-getgitroot`
 
 #
 # Print Information
@@ -146,6 +149,7 @@ fi
 echo "[XBUILD]"
 echo "  ROOT: $XBUILDROOT"
 echo "  Workspace: $XBUILD_WORKSPACE_ROOT"
+echo "  Git: $XBUILD_GIT_ROOT"
 echo "  Make: $XBUILDMAKE"
 echo "  Toolchain: $XBUILD_TOOLCHAIN_DEFAULT_VS"
 echo "  WDK: $XBUILD_TOOLCHAIN_WDKROOT"
@@ -173,32 +177,32 @@ echo " "
 # Post checking
 #
 if [ "$XBUILD_TOOLCHAIN_DEFAULT_VS" == "" ]; then
-    echo "XBUILD Warning: Visual Studio not found"
+    xbuild-print "XBUILD Warning: Visual Studio not found" yellow i
 fi
 if [ "$XBUILD_TOOLCHAIN_WDKROOT" == "" ]; then
-    echo "XBUILD Warning: Windows Kits not found"
+    xbuild-print "XBUILD Warning: Windows Kits not found" yellow i
 else
     if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
-        echo "XBUILD Warning: Windows SDK not found"
+        xbuild-print "XBUILD Warning: Windows SDK not found" yellow i
     fi
     if [ "$XBUILD_TOOLCHAIN_DDK_DEFAULT" == "" ]; then
-        echo "XBUILD Warning: Windows DDK not found"
+        xbuild-print "XBUILD Warning: Windows DDK not found" yellow i
     fi
 fi
 
 if [ "$XBUILD_WORKSPACE_ROOT" == "" ]; then
-    echo "XBUILD Warning: Workspace root is not set, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\""
+    xbuild-print "XBUILD Warning: Workspace root is not set, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\"" yellow i
 fi
 
 if [ "$XBUILD_WORKSPACE_ROOT" == "$XBUILDROOT" ]; then
-    echo "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\""
+    xbuild-print "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\"" yellow i
 fi
 
 if [ -f ~/xbuild-host.pfx ]; then
     HOST_VERT_IN_STORE=`xbuild-findcert`
     #echo "HOST_VERT_IN_STORE=$HOST_VERT_IN_STORE"
     if [ "$HOST_VERT_IN_STORE" == "" ]; then
-        echo "XBUILD Warning: XBUILD host certificate file '~/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..."
+        xbuild-print "XBUILD Warning: XBUILD host certificate file '~/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..." yellow i
         # Following command require Admin privilege
         # certutil.exe -addstore "Root" C:/Users/engineer/xbuild-host-cert.pem
         # certutil.exe -importpfx ~/xbuild-host.pfx
@@ -207,13 +211,12 @@ fi
 
 
 # Ensure Git is installed and make is copied
-XBUILD_GIT_ROOT=`xbuild-getgitroot`
 if [ "$XBUILD_GIT_ROOT" == "" ]; then
-    echo "XBUILD Warning: Git is not found"
+    xbuild-print "XBUILD Warning: Git is not found" red b
 else
     if [ $XBUILD_HOST_OSNAME == Windows ]; then
         if [ ! -f "$XBUILD_GIT_ROOT/usr/bin/make.exe" ]; then
-            echo "XBUILD Warning: make.exe is not found in Git, copy xbuild make to Git"
+            xbuild-print "XBUILD Warning: make.exe is not found in Git, copy xbuild make to Git" yellow i
             cp "$XBUILDROOT/tools/make/windows/bin/make.exe" "$XBUILD_GIT_ROOT/usr/bin/make.exe" || echo "ERROR: Fail to copy, try command: 'cp \"$XBUILDROOT/tools/make/windows/bin/make.exe\" \"$XBUILD_GIT_ROOT/usr/bin/make.exe\"'"
         fi
     fi

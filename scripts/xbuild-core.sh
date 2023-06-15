@@ -188,7 +188,7 @@ xbuild-start-ssh()
 xbuild-getgitroot()
 {
     GIT_EXEC_DIR=`git --exec-path`
-    if [ ! -d "$GIT_EXEC_DIR0" ]; then
+    if [ ! -d "$GIT_EXEC_DIR" ]; then
         return
     fi
     while [ -d "$GIT_EXEC_DIR" ] && [ ! "$GIT_EXEC_DIR" == "/" ]
