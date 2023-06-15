@@ -33,13 +33,35 @@ xbuild-get-dirname()
     echo "$1" | sed 's#/[^/]*$##'
 }
 
+# Convert unix path to dos path
+xbuild-unix2dospath()
+{
+    if [ "$1." == "." ]; then
+        echo "$1"
+        return
+    fi
+
+    UNIXPATH=$1
+    
+    if [ ${UNIXPATH:0:1}. == /. ]; then
+        if [ ${UNIXPATH:2:1}. == /. ]; then
+            DRIVE=`xbuild-upper ${UNIXPATH:1:1}`
+            echo "$DRIVE:${UNIXPATH:2}"
+            return
+        fi
+    fi
+    
+    # Otherwise, it is not unix-style Windows Path
+    echo "$1"
+}
+
 # Get and export os name, currently xbuild only supports following OS
 #    - Windows
 #    - Linux
 #    - Darwin
 xbuild-get-osname()
 {
-    UNAMESTR=`XBuildToUpper \`uname -s\``
+    UNAMESTR=`xbuild-upper \`uname -s\``
     if [[ "$UNAMESTR" == MINGW* ]]; then
         echo Windows
     elif [[ "$UNAMESTR" == MSYS_NT* ]]; then
@@ -52,6 +74,12 @@ xbuild-get-osname()
         echo ""
     fi
 }
+
+CURRENTOS=`xbuild-get-osname`
+if [ "$CURRENTOS" == "Windows" ]; then
+    export XBUILDROOT=`xbuild-unix2dospath $XBUILDROOT`
+fi
+echo "XBUILDROOT: $XBUILDROOT"
 
 # Get and export os architecture, currently xbuild only supports following
 #    - x86
@@ -188,7 +216,7 @@ xbuild-start-ssh()
 xbuild-getgitroot()
 {
     GIT_EXEC_DIR=`git --exec-path`
-    if [ ! -d "$GIT_EXEC_DIR0" ]; then
+    if [ ! -d "$GIT_EXEC_DIR" ]; then
         return
     fi
     while [ -d "$GIT_EXEC_DIR" ] && [ ! "$GIT_EXEC_DIR" == "/" ]
@@ -325,28 +353,6 @@ xbuild-findcert()
     CERTFILTER="Issuer: CN=$CN_NAME"
     CERTRESULT=`$CERTUTIL -store ROOT | grep "$CERTFILTER"`
     echo -n "$CERTRESULT"
-}
-
-# Convert unix path to dos path
-xbuild-unix2dospath()
-{
-    if [ "$1." == "." ]; then
-        echo "$1"
-        return
-    fi
-
-    UNIXPATH=$1
-    
-    if [ ${UNIXPATH:0:1}. == /. ]; then
-        if [ ${UNIXPATH:2:1}. == /. ]; then
-            DRIVE=`xbuild-upper ${UNIXPATH:1:1}`
-            echo "$DRIVE:${UNIXPATH:2}"
-            return
-        fi
-    fi
-    
-    # Otherwise, it is not unix-style Windows Path
-    echo "$1"
 }
 
 xbuild-sign()
