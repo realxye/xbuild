@@ -5,6 +5,58 @@
 # Set XBUILDROOT
 export XBUILDROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 
+# Export some common bash color settings
+#   - End
+export BASHCOLOR_END="\e[0m"
+#   - Normal
+export BASHCOLOR_RED="\e[31m"
+export BASHCOLOR_GREEN="\e[32m"
+export BASHCOLOR_YELLOW="\e[33m"
+export BASHCOLOR_BLUE="\e[34m"
+export BASHCOLOR_MAGENTA="\e[35m"
+export BASHCOLOR_CYAN="\e[36m"
+export BASHCOLOR_LIGHT_GRAY="\e[37m"
+export BASHCOLOR_GRAY="\e[90m"
+export BASHCOLOR_LIGHT_RED="\e[91m"
+export BASHCOLOR_LIGHT_GREEN="\e[92m"
+export BASHCOLOR_LIGHT_YELLOW="\e[93m"
+export BASHCOLOR_LIGHT_BLUE="\e[94m"
+export BASHCOLOR_LIGHT_MAGENTA="\e[95m"
+export BASHCOLOR_LIGHT_CYAN="\e[96m"
+export BASHCOLOR_WHITE="\e[97m"
+#   - Bold
+export BASHCOLOR_BOLD_RED="\e[1;31m"
+export BASHCOLOR_BOLD_GREEN="\e[1;32m"
+export BASHCOLOR_BOLD_YELLOW="\e[1;33m"
+export BASHCOLOR_BOLD_BLUE="\e[1;34m"
+export BASHCOLOR_BOLD_MAGENTA="\e[1;35m"
+export BASHCOLOR_BOLD_CYAN="\e[1;36m"
+export BASHCOLOR_BOLD_LIGHT_GRAY="\e[1;37m"
+export BASHCOLOR_BOLD_GRAY="\e[1;90m"
+export BASHCOLOR_BOLD_LIGHT_RED="\e[1;91m"
+export BASHCOLOR_BOLD_LIGHT_GREEN="\e[1;92m"
+export BASHCOLOR_BOLD_LIGHT_YELLOW="\e[1;93m"
+export BASHCOLOR_BOLD_LIGHT_BLUE="\e[1;94m"
+export BASHCOLOR_BOLD_LIGHT_MAGENTA="\e[1;95m"
+export BASHCOLOR_BOLD_LIGHT_CYAN="\e[1;96m"
+export BASHCOLOR_BOLD_WHITE="\e[1;97m"
+#   - Italics
+export BASHCOLOR_ITALIC_RED="\e[3;31m"
+export BASHCOLOR_ITALIC_GREEN="\e[3;32m"
+export BASHCOLOR_ITALIC_YELLOW="\e[3;33m"
+export BASHCOLOR_ITALIC_BLUE="\e[3;34m"
+export BASHCOLOR_ITALIC_MAGENTA="\e[3;35m"
+export BASHCOLOR_ITALIC_CYAN="\e[3;36m"
+export BASHCOLOR_ITALIC_LIGHT_GRAY="\e[3;37m"
+export BASHCOLOR_ITALIC_GRAY="\e[3;90m"
+export BASHCOLOR_ITALIC_LIGHT_RED="\e[3;91m"
+export BASHCOLOR_ITALIC_LIGHT_GREEN="\e[3;92m"
+export BASHCOLOR_ITALIC_LIGHT_YELLOW="\ee[3;93m"
+export BASHCOLOR_ITALIC_LIGHT_BLUE="\e[3;94m"
+export BASHCOLOR_ITALIC_LIGHT_MAGENTA="\e[3;95m"
+export BASHCOLOR_ITALIC_LIGHT_CYAN="\e[3;96m"
+export BASHCOLOR_ITALIC_WHITE="\e[3;97m"
+
 # Check XBuild profile
 if [ ! -f ~/xbuild.profile ]; then
     printf "XBuild profile doesn't exist, try to initialize xbuild ... "

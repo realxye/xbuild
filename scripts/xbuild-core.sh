@@ -90,6 +90,72 @@ xbuild-parse-args()
     done
 }
 
+# print msg
+xbuild-print()
+{
+    # check text style
+    if [ "$3" == "b" ]; then
+        Style="1"
+    elif  [ "$3" == "i" ]; then
+        Style="3"
+    elif  [ "$3" == "bi" ]; then
+        Style="1;3"
+    else
+        Style=
+    fi
+
+    # check text color
+    if [ "$2" == "black" ]; then
+        Color="30"
+    elif  [ "$2" == "red" ]; then
+        Color="31"
+    elif  [ "$2" == "green" ]; then
+        Color="32"
+    elif  [ "$2" == "yellow" ]; then
+        Color="33"
+    elif  [ "$2" == "blue" ]; then
+        Color="34"
+    elif  [ "$2" == "magenta" ]; then
+        Color="35"
+    elif  [ "$2" == "cyan" ]; then
+        Color="36"
+    elif  [ "$2" == "light-gray" ]; then
+        Color="37"
+    elif  [ "$2" == "gray" ]; then
+        Color="90"
+    elif  [ "$2" == "light-red" ]; then
+        Color="91"
+    elif  [ "$2" == "light-green" ]; then
+        Color="92"
+    elif  [ "$2" == "light-yellow" ]; then
+        Color="93"
+    elif  [ "$2" == "light-blue" ]; then
+        Color="94"
+    elif  [ "$2" == "light-magenta" ]; then
+        Color="95"
+    elif  [ "$2" == "light-cyan" ]; then
+        Color="96"
+    elif  [ "$2" == "light-white" ]; then
+        Color="97"
+    else
+        Color=
+    fi
+    
+    if [ "$Style" == "" ] || [ "$Color" == "" ]; then
+        Separator=
+    else
+        Separator=";"
+    fi
+
+    if [ "$Style" == "" ] && [ "$Color" == "" ]; then
+        echo "$1"
+    elif [ "$Style" == "" ] || [ "$Color" == "" ]; then
+        echo -e "\e[${Style}${Color}m$1 \e[0m"
+    else
+        echo -e "\e[${Style};${Color}m$1 \e[0m"
+    fi
+}
+
 xbuild-start-ssh()
 {
     SSH_ENV=$HOME/.ssh/environment
@@ -106,17 +172,17 @@ xbuild-start-ssh()
         echo "Initializing new SSH agent..."
         # spawn ssh-agent
         /usr/bin/ssh-agent | sed 's/^echo/#echo/' > "${SSH_ENV}"
-        echo "  - succeeded"
+        xbuild-print "  - succeeded"
         chmod 600 "${SSH_ENV}"
         . "${SSH_ENV}" > /dev/null
         # ADD YOUR SSH CERTS
         keys=`echo \`ls ~/.ssh | grep .pub\``
         for k in ${keys}; do
-            echo "Adding cert: ~/.ssh/${k::-4}"
+            xbuild-print "Adding cert: ~/.ssh/${k::-4}" yellow i
             /usr/bin/ssh-add ~/.ssh/${k::-4}
         done
     fi
-    echo "SSH agent is running"
+    xbuild-print "SSH agent is running" green b
 }
 
 xbuild-getgitroot()
