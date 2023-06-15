@@ -5,6 +5,9 @@
 # Set XBUILDROOT
 export XBUILDROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 
+# Execute core scripts
+source "$XBUILDROOT/scripts/xbuild-core.sh"
+
 # Export some common bash color settings
 #   - End
 export BASHCOLOR_END="\e[0m"
@@ -92,9 +95,6 @@ source ~/xbuild.profile
 if [ -f ~/xbuild.alias ]; then
     source ~/xbuild.alias
 fi
-
-# Execute core scripts
-source "$XBUILDROOT/scripts/xbuild-core.sh"
 
 # Export Xbuild Tools
 if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
