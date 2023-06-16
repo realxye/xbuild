@@ -103,6 +103,59 @@ else
     export XBUILDMAKE=make
 fi
 
+xbuild-make()
+{
+    # Usage:
+    #   xbuild-make <config=debug|release> <arch=x86|x64|arm|arm64> <target=TARGET_PATH> <toolset=vs2017|vs2019|vs2022|llvm|gcc> [verbose=true|debug]
+
+    # Check parameters
+    argc=$#
+    argv=("$@")
+    for (( i=0; i<argc; i++ )); do
+        if [[ "${argv[i]}" == config=* ]]; then
+            MP_CONFIG=`echo "${argv[i]}" | cut -c 8-`
+        elif [[ "${argv[i]}" == arch=* ]]; then
+            MP_ARCH=`echo "${argv[i]}" | cut -c 6-`
+        elif [[ "${argv[i]}" == target=* ]]; then
+            MP_TARGET=`echo "${argv[i]}" | cut -c 8-`
+        elif [[ "${argv[i]}" == verbose=* ]]; then
+            MP_VERBOSE=`echo "${argv[i]}" | cut -c 9-`
+        elif [[ "${argv[i]}" == toolset=* ]]; then
+            MP_TOOLSET=`echo "${argv[i]}" | cut -c 9-`
+        else
+            echo "Warning: Unknown parameter \"${argv[i]}\""
+        fi
+    done
+
+    # Check config
+    if [ "$MP_CONFIG" == "" ]; then
+        echo "ERROR: Config is not defined"
+        echo "Usage: xbuild-make <config> <arch> [verbose]"
+    fi
+
+    # Check arch
+    if [ "$MP_ARCH" == "" ]; then
+        echo "ERROR: Architecture is not defined"
+        echo "Usage: xbuild-make <config> <arch> [verbose]"
+    fi
+
+    # Check arch
+    if [ "$MP_TOOLSET" == "" ]; then
+        MP_TOOLSET_VER=$XBUILD_TOOLCHAIN_DEFAULT_VS
+    else
+        MP_TOOLSET_VER=$MP_TOOLSET
+    fi
+
+    # prepare log file dir
+    if [ ! -d output ]; then
+        mkdir -p output
+    fi
+    LOGTIME=`date "+%Y%m%d%H%M%S"`
+    LOGFILE=output/$MP_TOOLSET_VER-$MP_CONFIG-$MP_ARCH-$LOGTIME.log
+    #echo "$XBUILDMAKE config=$MP_CONFIG arch=$MP_ARCH verbose=$MP_VERBOSE toolset=$MP_TOOLSET target=$MP_TARGET | tee $LOGFILE"
+    $XBUILDMAKE config=$MP_CONFIG arch=$MP_ARCH verbose=$MP_VERBOSE toolset=$MP_TOOLSET target=$MP_TARGET | tee $LOGFILE
+}
+
 #
 # Fix Mac Bash Color
 #

@@ -41,58 +41,56 @@ else
     $(error XBUILD_HOST_OSNAME ($(XBUILD_HOST_OSNAME)) is not supported (XBUILD supports Windows, Darwin and Linux))
 endif
 
-LOGFILE:=$(PROJECT_ROOT)/output/$(BUILD_TOOLSET)-$(BUILD_CONFIG)-$(BUILD_ARCH).log
-
 #-----------------------------------#
 #           Make Targets            #
 #-----------------------------------#
 
 all: XBUILD_ZERO $(TARGET_FILENAME) XBUILD_POST_BUILD
-	@echo "> Target has been built successfully (Used $(XTIME_DURATION) seconds)" | tee -a $(LOGFILE)
+	@echo "> Target has been built successfully (Used $(XTIME_DURATION) seconds)"
 
 XBUILD_ZERO:
-	@echo "----------------- Build Target: $(TARGET_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) -----------------" | tee -a $(LOGFILE) ; \
-	echo "Start at `date "+%Y-%m-%d %H:%M:%S"`" | tee -a $(LOGFILE) ; \
-	echo "> ZeroCheck ..." | tee -a $(LOGFILE) ; \
+	@echo "----------------- Build Target: $(TARGET_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) -----------------" ; \
+	echo "Start at `date "+%Y-%m-%d %H:%M:%S"`" ; \
+	echo "> ZeroCheck ..." ; \
 	if [ -z $(TARGET_NAME) ]; then \
-		echo "    ERROR: TARGET_NAME is not defined" | tee -a $(LOGFILE) ; \
+		echo "    ERROR: TARGET_NAME is not defined" ; \
 		exit 1 ; \
 	fi ; \
 	if [ -z $(BUILD_TOOLSET) ]; then \
-		echo "    ERROR: BUILD_TOOLSET is not defined" | tee -a $(LOGFILE) ; \
+		echo "    ERROR: BUILD_TOOLSET is not defined" ; \
 		exit 1 ; \
 	fi ; \
 	if [ -z $(BUILD_CONFIG) ]; then \
-		echo "    ERROR: BUILD_CONFIG is not defined" | tee -a $(LOGFILE) ; \
+		echo "    ERROR: BUILD_CONFIG is not defined" ; \
 		exit 1 ; \
 	fi ; \
 	if [ -z $(BUILD_ARCH) ]; then \
-		echo "    ERROR: BUILD_ARCH is not defined" | tee -a $(LOGFILE) ; \
+		echo "    ERROR: BUILD_ARCH is not defined" ; \
 		exit 1 ; \
 	fi ; \
 	if [ ! -z $(BUILD_VERBOSE_DBG) ]; then \
-		echo "  [Target]" | tee -a $(LOGFILE) ; \
-		echo "    Name:   $(TARGET_NAME)" | tee -a $(LOGFILE) ; \
-		echo "    Type:   $(TARGET_TYPE)" | tee -a $(LOGFILE) ; \
-		echo "  [Build Options]" | tee -a $(LOGFILE) ; \
-		echo "    Toolset:         $(BUILD_TOOLSET)" | tee -a $(LOGFILE) ; \
-		echo "    Config:          $(BUILD_CONFIG)" | tee -a $(LOGFILE) ; \
-		echo "    Architecture:    $(BUILD_ARCH)" | tee -a $(LOGFILE) ; \
-		echo "    OutputDir:       $(BUILD_OUTDIR)" | tee -a $(LOGFILE) ; \
-		echo "    IntermediateDir: $(BUILD_INTDIR)" | tee -a $(LOGFILE) ; \
-		echo "    GeneratedDir:    $(BUILD_GENDIR)" | tee -a $(LOGFILE) ; \
-		echo "  [Build Tools]" | tee -a $(LOGFILE) ; \
-		echo "    CC:              $(BUILDTOOL_CC)" | tee -a $(LOGFILE) ; \
-		echo "    CXX:             $(BUILDTOOL_CXX)" | tee -a $(LOGFILE) ; \
-		echo "    LINK:            $(BUILDTOOL_LINK)" | tee -a $(LOGFILE) ; \
-		echo "    LIB:             $(BUILDTOOL_LIB)" | tee -a $(LOGFILE) ; \
-		echo "    ML:              $(BUILDTOOL_ML)" | tee -a $(LOGFILE) ; \
-		echo "    RC:              $(BUILDTOOL_RC)" | tee -a $(LOGFILE) ; \
-		echo "    MC:              $(BUILDTOOL_MC)" | tee -a $(LOGFILE) ; \
-		echo "    MT:              $(BUILDTOOL_MT)" | tee -a $(LOGFILE) ; \
-		echo "    MIDL:            $(BUILDTOOL_MIDL)" | tee -a $(LOGFILE) ; \
+		echo "  [Target]" ; \
+		echo "    Name:   $(TARGET_NAME)" ; \
+		echo "    Type:   $(TARGET_TYPE)" ; \
+		echo "  [Build Options]" ; \
+		echo "    Toolset:         $(BUILD_TOOLSET)" ; \
+		echo "    Config:          $(BUILD_CONFIG)" ; \
+		echo "    Architecture:    $(BUILD_ARCH)" ; \
+		echo "    OutputDir:       $(BUILD_OUTDIR)" ; \
+		echo "    IntermediateDir: $(BUILD_INTDIR)" ; \
+		echo "    GeneratedDir:    $(BUILD_GENDIR)" ; \
+		echo "  [Build Tools]" ; \
+		echo "    CC:              $(BUILDTOOL_CC)" ; \
+		echo "    CXX:             $(BUILDTOOL_CXX)" ; \
+		echo "    LINK:            $(BUILDTOOL_LINK)" ; \
+		echo "    LIB:             $(BUILDTOOL_LIB)" ; \
+		echo "    ML:              $(BUILDTOOL_ML)" ; \
+		echo "    RC:              $(BUILDTOOL_RC)" ; \
+		echo "    MC:              $(BUILDTOOL_MC)" ; \
+		echo "    MT:              $(BUILDTOOL_MT)" ; \
+		echo "    MIDL:            $(BUILDTOOL_MIDL)" ; \
 	fi ; \
-	echo "> Compiling ..." | tee -a $(LOGFILE)
+	echo "> Compiling ..."
 
 clean:
 	@echo '----------------- Clean Target: $(TARGET_NAME) -----------------' ; \

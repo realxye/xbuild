@@ -205,9 +205,9 @@ endif
 		fi \
 	fi
 	@if [ ! -z '$(BUILD_VERBOSE)' ]; then \
-		echo '"$(BUILDTOOL_ML)" $(BUILD_ML_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" -c $<' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_ML)" $(BUILD_ML_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" -c $<' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_ML)" $(BUILD_ML_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" -c $< || exit 1
 
 %.o: $(BUILD_SRCPREFIX)%.asm
@@ -221,9 +221,9 @@ endif
 		fi \
 	fi
 	@if [ ! -z '$(BUILD_VERBOSE)' ]; then \
-		echo '"$(BUILDTOOL_ML)" $(BUILD_ML_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" -c $<' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_ML)" $(BUILD_ML_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" -c $<' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_ML)" $(BUILD_ML_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" -c $< || exit 1
 
 # Rule for building C files
@@ -238,9 +238,9 @@ endif
 		fi \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_CC)" $(BUILD_CC_FLAGS) $(CXXFLAG_PCH_USE) -c $< -Fo"$(subst /,\,$(BUILD_INTDIR))\$@"' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_CC)" $(BUILD_CC_FLAGS) $(CXXFLAG_PCH_USE) -c $< -Fo"$(subst /,\,$(BUILD_INTDIR))\$@"' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_CC)" $(BUILD_CC_FLAGS) $(CXXFLAG_PCH_USE) -c $< -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" || exit 1
 
 # Rule for building C++ files
@@ -259,9 +259,9 @@ endif
 		fi \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ]; then \
-		echo '"$(BUILDTOOL_CXX)" $(BUILD_CXX_FLAGS) $(CXXFLAG_PCH_USE) -c $< -Fo"$(subst /,\,$(BUILD_INTDIR))\$@"' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_CXX)" $(BUILD_CXX_FLAGS) $(CXXFLAG_PCH_USE) -c $< -Fo"$(subst /,\,$(BUILD_INTDIR))\$@"' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_CXX)" $(BUILD_CXX_FLAGS) $(CXXFLAG_PCH_USE) -c $< -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" || exit 1
 
 # Rule for Precompiled Header File
@@ -269,12 +269,12 @@ $(TARGET_NAME).pch:
 	@if [ ! -d $(BUILD_INTDIR) ] ; then \
 		mkdir -p $(BUILD_INTDIR) ; \
 	fi
-	@ echo "Build precompile header ..."  | tee -a $(LOGFILE)
+	@ echo "Build precompile header ..." 
 	@echo '#include "$(TARGET_PRECOMPILE_HEADER)"' > $(BUILD_INTDIR)/xbuild-precompile.cpp ; \
 	if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_CXX)" $(BUILD_CXX_FLAGS) $(CXXFLAG_PCH_CREATE) -c "$(subst /,\,$(BUILD_INTDIR))\xbuild-precompile.cpp" -Fo"$(subst /,\,$(BUILD_INTDIR))\xbuild-precompile.o"' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_CXX)" $(BUILD_CXX_FLAGS) $(CXXFLAG_PCH_CREATE) -c "$(subst /,\,$(BUILD_INTDIR))\xbuild-precompile.cpp" -Fo"$(subst /,\,$(BUILD_INTDIR))\xbuild-precompile.o"' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_CXX)" $(BUILD_CXX_FLAGS) $(CXXFLAG_PCH_CREATE) -c "$(subst /,\,$(BUILD_INTDIR))\xbuild-precompile.cpp" -Fo"$(subst /,\,$(BUILD_INTDIR))\xbuild-precompile.o"
 
 # Rule for building the resources
@@ -289,9 +289,9 @@ $(TARGET_NAME).pch:
 		fi \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_RC)" $(BUILD_RC_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" $<' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_RC)" $(BUILD_RC_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" $<' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_RC)" $(BUILD_RC_FLAGS) -Fo"$(subst /,\,$(BUILD_INTDIR))\$@" $< || exit 1
 
 # Rule for building MIDL files
@@ -311,56 +311,56 @@ $(TARGET_NAME).pch:
 		fi \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_MIDL)" $(BUILD_MIDL_FLAGS) /out $(subst /,\,$(BUILD_INTDIR)) $<' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_MIDL)" $(BUILD_MIDL_FLAGS) /out $(subst /,\,$(BUILD_INTDIR)) $<' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_MIDL)" $(BUILD_MIDL_FLAGS) /out $(subst /,\,$(BUILD_INTDIR)) $< || exit 1
 
 # Rule for link static library
 $(TARGET_NAME).lib: $(BUILD_PCH) $(BUILD_INTERMEDIATE_TARGETS)
-	@echo "> Linking ..." | tee -a $(LOGFILE)
+	@echo "> Linking ..."
 	@if [ ! -d $(BUILD_OUTDIR) ] ; then \
 		mkdir -p $(BUILD_OUTDIR) ; \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_LIB)" $(BUILD_LIB_FLAGS) -OUT:"$(subst /,\,$(BUILD_OUTDIR))\$@" $(BUILD_INTERMEDIATE_TARGETS)' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_LIB)" $(BUILD_LIB_FLAGS) -OUT:"$(subst /,\,$(BUILD_OUTDIR))\$@" $(BUILD_INTERMEDIATE_TARGETS)' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_LIB)" $(BUILD_LIB_FLAGS) -OUT:"$(subst /,\,$(BUILD_OUTDIR))\$@" $(BUILD_INTERMEDIATE_TARGETS) || exit 1
 
 # Rule for link DLL
 $(TARGET_NAME).dll: $(BUILD_PCH) $(BUILD_INTERMEDIATE_TARGETS)
-	@echo "> Linking ..." | tee -a $(LOGFILE)
+	@echo "> Linking ..."
 	@if [ ! -d $(BUILD_OUTDIR) ] ; then \
 		mkdir -p $(BUILD_OUTDIR) ; \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS)' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS)' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS) || exit 1
 
 # Rule for link EXE
 $(TARGET_NAME).exe: $(BUILD_PCH) $(BUILD_INTERMEDIATE_TARGETS)
-	@echo "> Linking ..." | tee -a $(LOGFILE)
+	@echo "> Linking ..."
 	@if [ ! -d $(BUILD_OUTDIR) ] ; then \
 		mkdir -p $(BUILD_OUTDIR) ; \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS)' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS)' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS) || exit 1
 
 # Rule for link SYS
 $(TARGET_NAME).sys: $(BUILD_PCH) $(BUILD_INTERMEDIATE_TARGETS)
-	@echo "> Linking ..." | tee -a $(LOGFILE)
+	@echo "> Linking ..."
 	@if [ ! -d $(BUILD_OUTDIR) ] ; then \
 		mkdir -p $(BUILD_OUTDIR) ; \
 	fi
 	@if [ ! -z "$(BUILD_VERBOSE)" ] ; then \
-		echo '"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS)' | tee -a $(LOGFILE) ; \
+		echo '"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS)' ; \
 	fi
-	@ echo "$@"  | tee -a $(LOGFILE)
+	@ echo "$@" 
 	@"$(BUILDTOOL_LINK)" $(BUILD_LINK_FLAGS) $(BUILD_PCH_OBJ) $(BUILD_INTERMEDIATE_TARGETS) || exit 1
 

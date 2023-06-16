@@ -35,9 +35,6 @@ endif
 # BUILD_ARCH, BUILD_CONFIG and BUILD_TOOLSET are checked in "xmake_common.mak"
 # and are guaranteed not empty
 
-LOGFILE:=$(PROJECT_ROOT)/output/$(BUILD_TOOLSET)-$(BUILD_CONFIG)-$(BUILD_ARCH).log
-$(info Log: $(LOGFILE))
-
 #-----------------------------------#
 #           Make Project            #
 #-----------------------------------#
@@ -49,11 +46,11 @@ else
 endif
 
 all: XBUILD_ZERO XBUILD_ALL_TARGETS
-	@echo " " | tee -a $(LOGFILE) ; \
-	echo ">>>>>>>>> PROJECT: $(PROJECT_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) HAS BEEN BUILT SUCCESSFULLY <<<<<<<<<" | tee -a $(LOGFILE) ; \
-	echo "Duration: $(XTIME_DURATION) seconds" | tee -a $(LOGFILE) ; \
-	echo " " | tee -a $(LOGFILE) ; \
-	echo " " | tee -a $(LOGFILE)
+	@echo " " ; \
+	echo ">>>>>>>>> PROJECT: $(PROJECT_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) HAS BEEN BUILT SUCCESSFULLY <<<<<<<<<" ; \
+	echo "Duration: $(XTIME_DURATION) seconds" ; \
+	echo " " ; \
+	echo " "
 
 help:
 	@echo "- Make Project" ; \
@@ -65,15 +62,15 @@ XBUILD_ZERO:
 	@if [ ! -d $(PROJECT_ROOT)/output ]; then \
 		mkdir -p $(PROJECT_ROOT)/output ; \
 	fi ; \
-	@echo " " | tee $(LOGFILE) ; \
-	echo  "################# BUILD PROJECT: $(PROJECT_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) #################" | tee -a $(LOGFILE) ; \
-	echo "Start at `date "+%Y-%m-%d %H:%M:%S"`" | tee -a $(LOGFILE) ; \
-	echo "Targets:" | tee -a $(LOGFILE) ; \
+	@echo " " ; \
+	echo  "################# BUILD PROJECT: $(PROJECT_NAME) ($(BUILD_TOOLSET): $(BUILD_CONFIG)/$(BUILD_ARCH)) #################" ; \
+	echo "Start at `date "+%Y-%m-%d %H:%M:%S"`" ; \
+	echo "Targets:" ; \
 	$(foreach Target,$(PROJECT_TARGETS), \
 		if [ -d "$(PROJECT_ROOT)/$(Target)" ] ; then \
-			echo "  - $(Target)" | tee -a $(LOGFILE) ; \
+			echo "  - $(Target)" ; \
 		else \
-			echo "  - ERROR: $(Target) not found" | tee -a $(LOGFILE) ; \
+			echo "  - ERROR: $(Target) not found" ; \
 			exit 1 ; \
 		fi ; \
 	)
@@ -81,19 +78,19 @@ XBUILD_ZERO:
 XBUILD_ALL_TARGETS:
 	@echo " " ; \
 	$(foreach Target,$(PROJECT_TARGETS), \
-		echo " " | tee -a $(LOGFILE) ; \
-		echo ">>> TARGET <<<: $(Target)" | tee -a $(LOGFILE) ; \
+		echo " " ; \
+		echo ">>> TARGET <<<: $(Target)" ; \
 		if [ -f "$(PROJECT_ROOT)/$(Target)/Makefile" ] ; then \
 			cd  "$(PROJECT_ROOT)/$(Target)"; \
 			if [ ! -z $(BUILD_VERBOSE) ] ; then \
-				echo "  $(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target)" | tee -a $(LOGFILE) ; \
+				echo "  $(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target)" ; \
 				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) verbose=$(verbose) project-root=$(PROJECT_ROOT) target-path=$(Target) || exit 1  ; \
 			else \
 				$(XBUILDMAKE) arch=$(BUILD_ARCH) config=$(BUILD_CONFIG) toolset=$(BUILD_TOOLSET) project-root=$(PROJECT_ROOT) target-path=$(Target) || exit 1 ; \
 			fi ; \
 			cd  "$(PROJECT_ROOT)"; \
 		else \
-			echo "  - ERROR: Makefile not found" | tee -a $(LOGFILE) ; \
+			echo "  - ERROR: Makefile not found" ; \
 			exit 1 ; \
 		fi ; \
 	)
