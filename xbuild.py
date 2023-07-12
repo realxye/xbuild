@@ -6,10 +6,15 @@ import pathlib
 import platform
 
 # Global Variables
-kUserHomeDir=pathlib.Path(os.environ["UserProfile"]).as_posix()
-kXBuildHomeDir=pathlib.Path(os.path.dirname(__file__).lower()).as_posix()
-if kXBuildHomeDir[1] == ':':
-    kXBuildHomeDir="/" + kXBuildHomeDir[0] + kXBuildHomeDir[2:]
+kHostOS=platform.system()
+if kHostOS == "Windows":
+    kUserHomeDir=pathlib.Path(os.environ["UserProfile"]).as_posix()
+else:
+    kUserHomeDir="~"
+
+kXBuildHomeDir=pathlib.Path(os.path.dirname(__file__)).as_posix()
+#if kXBuildHomeDir[1] == ':':
+#    kXBuildHomeDir="/" + kXBuildHomeDir[0] + kXBuildHomeDir[2:]
 
 def GetArgc(argv:list[str]):
     if argv != None:
@@ -35,10 +40,6 @@ class BuildCommon:
             return ""
         return arr[0]
     
-    def GetHostOS(self)->str:
-        """Get host OS name: Windows, Darwin, Linux"""
-        return platform.system()
-    
     def GetHostArch(self)->str:
         """Get host Arch name: x86, x64, arm, arm64"""
         machine=platform.machine().lower()
@@ -54,6 +55,7 @@ class BuildCommon:
                 return "x86"
 
 common=BuildCommon()
+kHostArch=common.GetHostArch()
 
 class BuildToolchain:
     name=""
@@ -276,7 +278,7 @@ class BuildInitializer:
         print("  - Run 'source xbuild.bashrc' to upate current bash session (or simply restart bash)")
 
     def CreateProfile(self):
-        file = os.path.join(self.userHomeDir, "xbuild.profile")
+        file = os.path.join(self.userHomeDir, ".xbuild/xbuild.profile")
         ret = 0
         try:
             with open(file, 'w') as f:
@@ -287,8 +289,8 @@ class BuildInitializer:
                 f.write("export XBUILD_WORKSPACE_ROOT=\"" + kXBuildHomeDir + "\"\n")
                 f.write("\n")
                 f.write("# HOST\n")
-                f.write("export XBUILD_HOST_OSNAME=" + common.GetHostOS() + "\n")
-                f.write("export XBUILD_HOST_OSARCH=" + common.GetHostArch() + "\n")
+                f.write("export XBUILD_HOST_OSNAME=" + kHostOS + "\n")
+                f.write("export XBUILD_HOST_OSARCH=" + kHostArch + "\n")
                 f.write("\n")
                 f.write("# Toochain\n")
                 defaultVS=""
@@ -369,7 +371,7 @@ class BuildInitializer:
         return ret
             
     def CreateAlias(self):
-        file = os.path.join(self.userHomeDir, "xbuild.alias")
+        file = os.path.join(self.userHomeDir, ".xbuild/xbuild.alias")
         ret = 0
         if os.path.isfile(file):
             return ret
