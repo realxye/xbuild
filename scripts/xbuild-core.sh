@@ -76,6 +76,10 @@ xbuild-get-osname()
 }
 
 CURRENTOS=`xbuild-get-osname`
+if [ "$XBUILD_HOST_OSNAME" == "" ]; then
+    export XBUILD_HOST_OSNAME=$CURRENTOS
+fi
+
 if [ "$CURRENTOS" == "Windows" ]; then
     export XBUILDROOT=`xbuild-unix2dospath $XBUILDROOT`
 fi
@@ -178,9 +182,9 @@ xbuild-print()
     if [ "$Style" == "" ] && [ "$Color" == "" ]; then
         echo "$1"
     elif [ "$Style" == "" ] || [ "$Color" == "" ]; then
-        echo -e "\e[${Style}${Color}m$1 \e[0m"
+        echo -e "\033[${Style}${Color}m$1 \033[0m"
     else
-        echo -e "\e[${Style};${Color}m$1 \e[0m"
+        echo -e "\033[${Style};${Color}m$1 \033[0m"
     fi
 }
 
@@ -219,6 +223,12 @@ xbuild-getgitroot()
     if [ ! -d "$GIT_EXEC_DIR" ]; then
         return
     fi
+
+    if [ "$CURRENTOS" == "Darwin" ]; then
+        echo "$GIT_EXEC_DIR"
+        return
+    fi
+
     while [ -d "$GIT_EXEC_DIR" ] && [ ! "$GIT_EXEC_DIR" == "/" ]
     do
         DIR_NAME=`xbuild-get-filename "$GIT_EXEC_DIR"`
@@ -233,7 +243,11 @@ xbuild-getgitroot()
 
 xbuild-hostpassword()
 {
-    KEY=`echo -n $USERNAME@$HOSTNAME | md5sum`
+    if [ "$CURRENTOS" == "Windows" ]; then
+        KEY=`echo -n $USERNAME@$HOSTNAME | md5sum`
+    else
+        KEY=`echo -n $USER@$HOSTNAME | md5sum`
+    fi
     KEYARRAY=($KEY)
     echo ${KEYARRAY[0]}
 }
@@ -321,7 +335,11 @@ xbuild-gencert()
 
     PSWD=`xbuild-hostpassword`
     OU_NAME=`xbuild-lower $HOSTNAME`
-    CN_NAME=`xbuild-lower $USERNAME.$HOSTNAME`
+    if [ "$CURRENTOS" == "Windows" ]; then
+        CN_NAME=`xbuild-lower $USERNAME.$HOSTNAME`
+    else
+        CN_NAME=`xbuild-lower $USER.$HOSTNAME`
+    fi
 
     # generate private RSA key and public certificate
     openssl req -x509 -sha256 -nodes -days 3650 -newkey rsa:2048 -keyout $PRIKEY -out $PUBCERT -subj "/C=US/ST=California/L=San Mateo/O=XBUILD/OU=$OU_NAME/CN=$CN_NAME"
@@ -335,7 +353,7 @@ xbuild-gencert()
     fi
 
     # generate PFX file
-    openssl pkcs12 -export -out $PFXCERT -inkey $PRIKEY --passout pass:$PSWD -in $PUBCERT
+    openssl pkcs12 -export -out $PFXCERT -inkey $PRIKEY -passout pass:$PSWD -in $PUBCERT
     if [ ! -f $PFXCERT ]; then
         echo "ERROR: Fail to create PFX file: $PFXCERT"
         rm $PRIKEY
