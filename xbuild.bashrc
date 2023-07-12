@@ -10,55 +10,55 @@ source "$XBUILDROOT/scripts/xbuild-core.sh"
 
 # Export some common bash color settings
 #   - End
-export BASHCOLOR_END="\e[0m"
+export BASHCOLOR_END="\033[0m"
 #   - Normal
-export BASHCOLOR_RED="\e[31m"
-export BASHCOLOR_GREEN="\e[32m"
-export BASHCOLOR_YELLOW="\e[33m"
-export BASHCOLOR_BLUE="\e[34m"
-export BASHCOLOR_MAGENTA="\e[35m"
-export BASHCOLOR_CYAN="\e[36m"
-export BASHCOLOR_LIGHT_GRAY="\e[37m"
-export BASHCOLOR_GRAY="\e[90m"
-export BASHCOLOR_LIGHT_RED="\e[91m"
-export BASHCOLOR_LIGHT_GREEN="\e[92m"
-export BASHCOLOR_LIGHT_YELLOW="\e[93m"
-export BASHCOLOR_LIGHT_BLUE="\e[94m"
-export BASHCOLOR_LIGHT_MAGENTA="\e[95m"
-export BASHCOLOR_LIGHT_CYAN="\e[96m"
-export BASHCOLOR_WHITE="\e[97m"
+export BASHCOLOR_RED="\033[31m"
+export BASHCOLOR_GREEN="\033[32m"
+export BASHCOLOR_YELLOW="\033[33m"
+export BASHCOLOR_BLUE="\033[34m"
+export BASHCOLOR_MAGENTA="\033[35m"
+export BASHCOLOR_CYAN="\033[36m"
+export BASHCOLOR_LIGHT_GRAY="\033[37m"
+export BASHCOLOR_GRAY="\033[90m"
+export BASHCOLOR_LIGHT_RED="\033[91m"
+export BASHCOLOR_LIGHT_GREEN="\033[92m"
+export BASHCOLOR_LIGHT_YELLOW="\033[93m"
+export BASHCOLOR_LIGHT_BLUE="\033[94m"
+export BASHCOLOR_LIGHT_MAGENTA="\033[95m"
+export BASHCOLOR_LIGHT_CYAN="\033[96m"
+export BASHCOLOR_WHITE="\033[97m"
 #   - Bold
-export BASHCOLOR_BOLD_RED="\e[1;31m"
-export BASHCOLOR_BOLD_GREEN="\e[1;32m"
-export BASHCOLOR_BOLD_YELLOW="\e[1;33m"
-export BASHCOLOR_BOLD_BLUE="\e[1;34m"
-export BASHCOLOR_BOLD_MAGENTA="\e[1;35m"
-export BASHCOLOR_BOLD_CYAN="\e[1;36m"
-export BASHCOLOR_BOLD_LIGHT_GRAY="\e[1;37m"
-export BASHCOLOR_BOLD_GRAY="\e[1;90m"
-export BASHCOLOR_BOLD_LIGHT_RED="\e[1;91m"
-export BASHCOLOR_BOLD_LIGHT_GREEN="\e[1;92m"
-export BASHCOLOR_BOLD_LIGHT_YELLOW="\e[1;93m"
-export BASHCOLOR_BOLD_LIGHT_BLUE="\e[1;94m"
-export BASHCOLOR_BOLD_LIGHT_MAGENTA="\e[1;95m"
-export BASHCOLOR_BOLD_LIGHT_CYAN="\e[1;96m"
-export BASHCOLOR_BOLD_WHITE="\e[1;97m"
+export BASHCOLOR_BOLD_RED="\033[1;31m"
+export BASHCOLOR_BOLD_GREEN="\033[1;32m"
+export BASHCOLOR_BOLD_YELLOW="\033[1;33m"
+export BASHCOLOR_BOLD_BLUE="\033[1;34m"
+export BASHCOLOR_BOLD_MAGENTA="\033[1;35m"
+export BASHCOLOR_BOLD_CYAN="\033[1;36m"
+export BASHCOLOR_BOLD_LIGHT_GRAY="\033[1;37m"
+export BASHCOLOR_BOLD_GRAY="\033[1;90m"
+export BASHCOLOR_BOLD_LIGHT_RED="\033[1;91m"
+export BASHCOLOR_BOLD_LIGHT_GREEN="\033[1;92m"
+export BASHCOLOR_BOLD_LIGHT_YELLOW="\033[1;93m"
+export BASHCOLOR_BOLD_LIGHT_BLUE="\033[1;94m"
+export BASHCOLOR_BOLD_LIGHT_MAGENTA="\033[1;95m"
+export BASHCOLOR_BOLD_LIGHT_CYAN="\033[1;96m"
+export BASHCOLOR_BOLD_WHITE="\033[1;97m"
 #   - Italics
-export BASHCOLOR_ITALIC_RED="\e[3;31m"
-export BASHCOLOR_ITALIC_GREEN="\e[3;32m"
-export BASHCOLOR_ITALIC_YELLOW="\e[3;33m"
-export BASHCOLOR_ITALIC_BLUE="\e[3;34m"
-export BASHCOLOR_ITALIC_MAGENTA="\e[3;35m"
-export BASHCOLOR_ITALIC_CYAN="\e[3;36m"
-export BASHCOLOR_ITALIC_LIGHT_GRAY="\e[3;37m"
-export BASHCOLOR_ITALIC_GRAY="\e[3;90m"
-export BASHCOLOR_ITALIC_LIGHT_RED="\e[3;91m"
-export BASHCOLOR_ITALIC_LIGHT_GREEN="\e[3;92m"
-export BASHCOLOR_ITALIC_LIGHT_YELLOW="\ee[3;93m"
-export BASHCOLOR_ITALIC_LIGHT_BLUE="\e[3;94m"
-export BASHCOLOR_ITALIC_LIGHT_MAGENTA="\e[3;95m"
-export BASHCOLOR_ITALIC_LIGHT_CYAN="\e[3;96m"
-export BASHCOLOR_ITALIC_WHITE="\e[3;97m"
+export BASHCOLOR_ITALIC_RED="\033[3;31m"
+export BASHCOLOR_ITALIC_GREEN="\033[3;32m"
+export BASHCOLOR_ITALIC_YELLOW="\033[3;33m"
+export BASHCOLOR_ITALIC_BLUE="\033[3;34m"
+export BASHCOLOR_ITALIC_MAGENTA="\033[3;35m"
+export BASHCOLOR_ITALIC_CYAN="\033[3;36m"
+export BASHCOLOR_ITALIC_LIGHT_GRAY="\033[3;37m"
+export BASHCOLOR_ITALIC_GRAY="\033[3;90m"
+export BASHCOLOR_ITALIC_LIGHT_RED="\033[3;91m"
+export BASHCOLOR_ITALIC_LIGHT_GREEN="\033[3;92m"
+export BASHCOLOR_ITALIC_LIGHT_YELLOW="\033[3;93m"
+export BASHCOLOR_ITALIC_LIGHT_BLUE="\033[3;94m"
+export BASHCOLOR_ITALIC_LIGHT_MAGENTA="\033[3;95m"
+export BASHCOLOR_ITALIC_LIGHT_CYAN="\033[3;96m"
+export BASHCOLOR_ITALIC_WHITE="\033[3;97m"
 
 # Check XBuild profile
 if [ ! -d ~/.xbuild ]; then
@@ -67,7 +67,11 @@ fi
 if [ ! -f ~/.xbuild/xbuild.profile ]; then
     xbuild-print "XBuild profile doesn't exist, try to initialize xbuild ... "
     # Create xbuild user profiles: ~/xbuild.profile, ~/xbuild.alias
-    $( python xbuild.py init >/dev/null 2>&1)
+    if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+        $( python3 xbuild.py init >/dev/null 2>&1)
+    else
+        $( python xbuild.py init >/dev/null 2>&1)
+    fi
     #$( touch ~/.xbuild/xbuild.profile >/dev/null 2>&1 )
     if [ -f ~/.xbuild/xbuild.profile ]; then
         xbuild-print "Done"
@@ -176,7 +180,7 @@ if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
     parse_git_branch() {
         git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
     }
-    #export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
+    #export PS1="\[\033[36m\]\u\[\033[m\]@\[\033[32m\]\h:\[\033[33;1m\]\w\[\033[91m\]\$(parse_git_branch)\[\033[00m\]$ "
     export CLICOLOR=1
     export LSCOLORS=ExFxBxDxCxegedabagacad
     alias ls='ls -GFh'
@@ -217,61 +221,71 @@ echo "  ROOT: $XBUILDROOT"
 echo "  Workspace: $XBUILD_WORKSPACE_ROOT"
 echo "  Git: $XBUILD_GIT_ROOT"
 echo "  Make: $XBUILDMAKE"
-echo "  Toolchain: $XBUILD_TOOLCHAIN_DEFAULT_VS"
-echo "  WDK: $XBUILD_TOOLCHAIN_WDKROOT"
-if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
-    echo "  SDK:"
+if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+    echo "  Toolchain: $XBUILD_TOOLCHAIN_DEFAULT_VS"
+    echo "  WDK: $XBUILD_TOOLCHAIN_WDKROOT"
+    if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
+        echo "  SDK:"
+    else
+        echo "  SDK: $XBUILD_TOOLCHAIN_SDK_DEFAULT ($XBUILD_TOOLCHAIN_SDK_VERSIONS)"
+    fi
+    if [ "$XBUILD_TOOLCHAIN_DDK_DEFAULT" == "" ]; then
+        echo "  DDK:"
+    else
+        echo "  DDK: $XBUILD_TOOLCHAIN_DDK_DEFAULT ($XBUILD_TOOLCHAIN_DDK_VERSIONS)"
+    fi
+    echo "  UMDF (x86): $XBUILD_TOOLCHAIN_UMDF_X86_DEFAULT"
+    echo "  UMDF (x64): $XBUILD_TOOLCHAIN_UMDF_X64_DEFAULT"
+    echo "  UMDF (arm): $XBUILD_TOOLCHAIN_UMDF_ARM_DEFAULT"
+    echo "  UMDF (arm64): $XBUILD_TOOLCHAIN_UMDF_ARM64_DEFAULT"
+    echo "  KMDF (x86): $XBUILD_TOOLCHAIN_KMDF_X86_DEFAULT"
+    echo "  KMDF (x64): $XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT"
+    echo "  KMDF (arm): $XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT"
+    echo "  KMDF (arm64): $XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT"
+elif [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+    echo "  Toolchain: clang ($XBUILD_TOOLCHAIN_APPLE_DEVTOOL)"
 else
-    echo "  SDK: $XBUILD_TOOLCHAIN_SDK_DEFAULT ($XBUILD_TOOLCHAIN_SDK_VERSIONS)"
+    echo "  Toolchain: clang (/usr/bin)"
 fi
-if [ "$XBUILD_TOOLCHAIN_DDK_DEFAULT" == "" ]; then
-    echo "  DDK:"
-else
-    echo "  DDK: $XBUILD_TOOLCHAIN_DDK_DEFAULT ($XBUILD_TOOLCHAIN_DDK_VERSIONS)"
-fi
-echo "  UMDF (x86): $XBUILD_TOOLCHAIN_UMDF_X86_DEFAULT"
-echo "  UMDF (x64): $XBUILD_TOOLCHAIN_UMDF_X64_DEFAULT"
-echo "  UMDF (arm): $XBUILD_TOOLCHAIN_UMDF_ARM_DEFAULT"
-echo "  UMDF (arm64): $XBUILD_TOOLCHAIN_UMDF_ARM64_DEFAULT"
-echo "  KMDF (x86): $XBUILD_TOOLCHAIN_KMDF_X86_DEFAULT"
-echo "  KMDF (x64): $XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT"
-echo "  KMDF (arm): $XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT"
-echo "  KMDF (arm64): $XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT"
 echo " "
 
 #
 # Post checking
 #
-if [ "$XBUILD_TOOLCHAIN_DEFAULT_VS" == "" ]; then
-    xbuild-print "XBUILD Warning: Visual Studio not found" yellow i
-fi
-if [ "$XBUILD_TOOLCHAIN_WDKROOT" == "" ]; then
-    xbuild-print "XBUILD Warning: Windows Kits not found" yellow i
-else
-    if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
-        xbuild-print "XBUILD Warning: Windows SDK not found" yellow i
+if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+    if [ "$XBUILD_TOOLCHAIN_DEFAULT_VS" == "" ]; then
+        xbuild-print "XBUILD Warning: Visual Studio not found" yellow i
     fi
-    if [ "$XBUILD_TOOLCHAIN_DDK_DEFAULT" == "" ]; then
-        xbuild-print "XBUILD Warning: Windows DDK not found" yellow i
+    if [ "$XBUILD_TOOLCHAIN_WDKROOT" == "" ]; then
+        xbuild-print "XBUILD Warning: Windows Kits not found" yellow i
+    else
+        if [ "$XBUILD_TOOLCHAIN_SDK_DEFAULT" == "" ]; then
+            xbuild-print "XBUILD Warning: Windows SDK not found" yellow i
+        fi
+        if [ "$XBUILD_TOOLCHAIN_DDK_DEFAULT" == "" ]; then
+            xbuild-print "XBUILD Warning: Windows DDK not found" yellow i
+        fi
     fi
 fi
 
 if [ "$XBUILD_WORKSPACE_ROOT" == "" ]; then
-    xbuild-print "XBUILD Warning: Workspace root is not set, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\"" yellow i
+    xbuild-print "XBUILD Warning: Workspace root is not set, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/.xbuild/xbuild.profile\"" yellow i
 fi
 
 if [ "$XBUILD_WORKSPACE_ROOT" == "$XBUILDROOT" ]; then
-    xbuild-print "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\"" yellow i
+    xbuild-print "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/.xbuild/xbuild.profile\"" yellow i
 fi
 
 if [ -f ~/.xbuild/xbuild-host.pfx ]; then
-    HOST_VERT_IN_STORE=`xbuild-findcert`
-    #echo "HOST_VERT_IN_STORE=$HOST_VERT_IN_STORE"
-    if [ "$HOST_VERT_IN_STORE" == "" ]; then
-        xbuild-print "XBUILD Warning: XBUILD host certificate file '~/.xbuild/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..." yellow i
-        # Following command require Admin privilege
-        # certutil.exe -addstore "Root" C:/Users/engineer/xbuild-host-cert.pem
-        # certutil.exe -importpfx ~/xbuild-host.pfx
+    if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+        HOST_VERT_IN_STORE=`xbuild-findcert`
+        #echo "HOST_VERT_IN_STORE=$HOST_VERT_IN_STORE"
+        if [ "$HOST_VERT_IN_STORE" == "" ]; then
+            xbuild-print "XBUILD Warning: XBUILD host certificate file '~/.xbuild/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..." yellow i
+            # Following command require Admin privilege
+            # certutil.exe -addstore "Root" C:/Users/engineer/xbuild-host-cert.pem
+            # certutil.exe -importpfx ~/xbuild-host.pfx
+        fi
     fi
 fi
 

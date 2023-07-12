@@ -10,7 +10,7 @@ kHostOS=platform.system()
 if kHostOS == "Windows":
     kUserHomeDir=pathlib.Path(os.environ["UserProfile"]).as_posix()
 else:
-    kUserHomeDir="~"
+    kUserHomeDir=os.path.expanduser('~')
 
 kXBuildHomeDir=pathlib.Path(os.path.dirname(__file__)).as_posix()
 #if kXBuildHomeDir[1] == ':':
@@ -249,17 +249,17 @@ class BuildWinKits:
 
 class BuildInitializer:
     """XBuild Initializer"""
-    userHomeDir=os.environ["UserProfile"]
     vs2017 = None
     vs2019 = None
     vs2022 = None
     winkits = None
     
     def __init__(self):
-        self.vs2017 = BuildToolchainMSVC("2017")
-        self.vs2019 = BuildToolchainMSVC("2019")
-        self.vs2022 = BuildToolchainMSVC("2022")
-        self.winkits = BuildWinKits()
+        if kHostOS == "Windows":
+            self.vs2017 = BuildToolchainMSVC("2017")
+            self.vs2019 = BuildToolchainMSVC("2019")
+            self.vs2022 = BuildToolchainMSVC("2022")
+            self.winkits = BuildWinKits()
 
     def Create(self, target):
         result = 0
@@ -272,13 +272,13 @@ class BuildInitializer:
             if result != 0:
                 return
         print("SUCCEEDED: xbuild has been initialized. Extra steps:")
-        print("  - (Optional) Edit '~/xbuild.profile' to set extra environment variables (e.g. set default workspace path)")
-        print("  - (Optional) Edit '~/xbuild.alias' to add your own alias")
+        print("  - (Optional) Edit '~/.xbuild/xbuild.profile' to set extra environment variables (e.g. set default workspace path)")
+        print("  - (Optional) Edit '~/.xbuild/xbuild.alias' to add your own alias")
         print("  - (Optional) Use 'xbuild-help` command to get more information")
         print("  - Run 'source xbuild.bashrc' to upate current bash session (or simply restart bash)")
 
     def CreateProfile(self):
-        file = os.path.join(self.userHomeDir, ".xbuild/xbuild.profile")
+        file = os.path.join(kUserHomeDir, ".xbuild/xbuild.profile")
         ret = 0
         try:
             with open(file, 'w') as f:
@@ -293,85 +293,91 @@ class BuildInitializer:
                 f.write("export XBUILD_HOST_OSARCH=" + kHostArch + "\n")
                 f.write("\n")
                 f.write("# Toochain\n")
-                defaultVS=""
-                # Visual Studio 2017
-                if self.vs2017.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2017=\"" + pathlib.Path(self.vs2017.path).as_posix() + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_VERSIONS=\"" + common.ListToString(self.vs2017.msvcVersions) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_DEFAULT=" + self.vs2017.msvcDefault + "\n")
-                    defaultVS="vs2017"
+                if kHostOS == "Windows":
+                    defaultVS=""
+                    # Visual Studio 2017
+                    if self.vs2017.Exist():
+                        f.write("export XBUILD_TOOLCHAIN_VS2017=\"" + pathlib.Path(self.vs2017.path).as_posix() + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_VERSIONS=\"" + common.ListToString(self.vs2017.msvcVersions) + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_DEFAULT=" + self.vs2017.msvcDefault + "\n")
+                        defaultVS="vs2017"
+                    else:
+                        f.write("export XBUILD_TOOLCHAIN_VS2017=\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_VERSIONS=\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_DEFAULT=\n")
+                    # Visual Studio 2019
+                    if self.vs2019.Exist():
+                        f.write("export XBUILD_TOOLCHAIN_VS2019=\"" + pathlib.Path(self.vs2019.path).as_posix() + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_VERSIONS=\"" + common.ListToString(self.vs2019.msvcVersions) + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_DEFAULT=" + self.vs2019.msvcDefault + "\n")
+                        defaultVS="vs2019"
+                    else:
+                        f.write("export XBUILD_TOOLCHAIN_VS2019=\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_VERSIONS=\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_DEFAULT=\n")
+                    # Visual Studio 2022
+                    if self.vs2022.Exist():
+                        f.write("export XBUILD_TOOLCHAIN_VS2022=\"" + pathlib.Path(self.vs2022.path).as_posix() + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_VERSIONS=\"" + common.ListToString(self.vs2022.msvcVersions) + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_DEFAULT=" + self.vs2022.msvcDefault + "\n")
+                        defaultVS="vs2022"
+                    else:
+                        f.write("export XBUILD_TOOLCHAIN_VS2022=\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_VERSIONS=\n")
+                        f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_DEFAULT=\n")
+                    # Default Visual Studio
+                    f.write("export XBUILD_TOOLCHAIN_DEFAULT_VS=" + defaultVS + "\n")
+                    f.write("\n")
+                    f.write("# WDKs\n")
+                    f.write("#   - Root\n")
+                    if self.winkits.wdkroot == "":
+                        f.write("export XBUILD_TOOLCHAIN_WDKROOT=\n")
+                    else:
+                        f.write("export XBUILD_TOOLCHAIN_WDKROOT=\"" + pathlib.Path(self.winkits.wdkroot).as_posix() + "\"\n")
+                    f.write("#   - SDK\n")
+                    if len(self.winkits.sdks) == 0:
+                        f.write("export XBUILD_TOOLCHAIN_SDK_VERSIONS=\n")
+                        f.write("export XBUILD_TOOLCHAIN_SDK_DEFAULT=\n")
+                    else:
+                        f.write("export XBUILD_TOOLCHAIN_SDK_VERSIONS=\"" + common.ListToString(self.winkits.sdks) + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_SDK_DEFAULT=\"" + common.GetListItem(self.winkits.sdks, 0) + "\"\n")
+                    f.write("#   - DDK\n")
+                    if len(self.winkits.ddks) == 0:
+                        f.write("export XBUILD_TOOLCHAIN_DDK_VERSIONS=\n")
+                        f.write("export XBUILD_TOOLCHAIN_DDK_DEFAULT=\n")
+                    else:
+                        f.write("export XBUILD_TOOLCHAIN_DDK_VERSIONS=\"" + common.ListToString(self.winkits.ddks) + "\"\n")
+                        f.write("export XBUILD_TOOLCHAIN_DDK_DEFAULT=\"" + common.GetListItem(self.winkits.ddks, 0) + "\"\n")
+                    f.write("#   - UMDF\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_X86_VERSIONS=\"" + common.ListToString(self.winkits.umdfX86) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_X86_DEFAULT=" + common.GetListItem(self.winkits.umdfX86, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_X64_VERSIONS=\"" + common.ListToString(self.winkits.umdfX64) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_X64_DEFAULT=" + common.GetListItem(self.winkits.umdfX64, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_ARM_VERSIONS=\"" + common.ListToString(self.winkits.umdfArm) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_ARM_DEFAULT=" + common.GetListItem(self.winkits.umdfArm, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.umdfArm64) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_UMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.umdfArm64, 0) + "\n")
+                    f.write("#   - KMDF\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_X86_VERSIONS=\"" + common.ListToString(self.winkits.kmdfX86) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_X86_DEFAULT=" + common.GetListItem(self.winkits.kmdfX86, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_X64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfX64) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT=" + common.GetListItem(self.winkits.kmdfX64, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_ARM_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm64) + "\"\n")
+                    f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm64, 0) + "\n")
+                elif kHostOS == "Darwin":
+                    f.write("export XBUILD_TOOLCHAIN_APPLE_DEVTOOL=\"/Library/Developer/CommandLineTools/usr/bin\"\n")
                 else:
-                    f.write("export XBUILD_TOOLCHAIN_VS2017=\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2017_MSVC_DEFAULT=\n")
-                # Visual Studio 2019
-                if self.vs2019.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2019=\"" + pathlib.Path(self.vs2019.path).as_posix() + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_VERSIONS=\"" + common.ListToString(self.vs2019.msvcVersions) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_DEFAULT=" + self.vs2019.msvcDefault + "\n")
-                    defaultVS="vs2019"
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS2019=\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2019_MSVC_DEFAULT=\n")
-                # Visual Studio 2022
-                if self.vs2022.Exist():
-                    f.write("export XBUILD_TOOLCHAIN_VS2022=\"" + pathlib.Path(self.vs2022.path).as_posix() + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_VERSIONS=\"" + common.ListToString(self.vs2022.msvcVersions) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_DEFAULT=" + self.vs2022.msvcDefault + "\n")
-                    defaultVS="vs2022"
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_VS2022=\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_VS2022_MSVC_DEFAULT=\n")
-                # Default Visual Studio
-                f.write("export XBUILD_TOOLCHAIN_DEFAULT_VS=" + defaultVS + "\n")
-                f.write("\n")
-                f.write("# WDKs\n")
-                f.write("#   - Root\n")
-                if self.winkits.wdkroot == "":
-                    f.write("export XBUILD_TOOLCHAIN_WDKROOT=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_WDKROOT=\"" + pathlib.Path(self.winkits.wdkroot).as_posix() + "\"\n")
-                f.write("#   - SDK\n")
-                if len(self.winkits.sdks) == 0:
-                    f.write("export XBUILD_TOOLCHAIN_SDK_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_SDK_DEFAULT=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_SDK_VERSIONS=\"" + common.ListToString(self.winkits.sdks) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_SDK_DEFAULT=\"" + common.GetListItem(self.winkits.sdks, 0) + "\"\n")
-                f.write("#   - DDK\n")
-                if len(self.winkits.ddks) == 0:
-                    f.write("export XBUILD_TOOLCHAIN_DDK_VERSIONS=\n")
-                    f.write("export XBUILD_TOOLCHAIN_DDK_DEFAULT=\n")
-                else:
-                    f.write("export XBUILD_TOOLCHAIN_DDK_VERSIONS=\"" + common.ListToString(self.winkits.ddks) + "\"\n")
-                    f.write("export XBUILD_TOOLCHAIN_DDK_DEFAULT=\"" + common.GetListItem(self.winkits.ddks, 0) + "\"\n")
-                f.write("#   - UMDF\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X86_VERSIONS=\"" + common.ListToString(self.winkits.umdfX86) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X86_DEFAULT=" + common.GetListItem(self.winkits.umdfX86, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X64_VERSIONS=\"" + common.ListToString(self.winkits.umdfX64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_X64_DEFAULT=" + common.GetListItem(self.winkits.umdfX64, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM_VERSIONS=\"" + common.ListToString(self.winkits.umdfArm) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM_DEFAULT=" + common.GetListItem(self.winkits.umdfArm, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.umdfArm64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_UMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.umdfArm64, 0) + "\n")
-                f.write("#   - KMDF\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X86_VERSIONS=\"" + common.ListToString(self.winkits.kmdfX86) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X86_DEFAULT=" + common.GetListItem(self.winkits.kmdfX86, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfX64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_X64_DEFAULT=" + common.GetListItem(self.winkits.kmdfX64, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm, 0) + "\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_VERSIONS=\"" + common.ListToString(self.winkits.kmdfArm64) + "\"\n")
-                f.write("export XBUILD_TOOLCHAIN_KMDF_ARM64_DEFAULT=" + common.GetListItem(self.winkits.kmdfArm64, 0) + "\n")
+                    f.write("export XBUILD_TOOLCHAIN_LINUX_DEVTOOL=\"/usr/bin\"\n")
+
         except FileNotFoundError:
             print("Fail to create xbuild environment profile")
             ret = 1
         return ret
             
     def CreateAlias(self):
-        file = os.path.join(self.userHomeDir, ".xbuild/xbuild.alias")
+        file = os.path.join(kUserHomeDir, ".xbuild/xbuild.alias")
         ret = 0
         if os.path.isfile(file):
             return ret
@@ -417,7 +423,7 @@ class BuildInitializer:
                 f.write("alias gitdropcommit='git reset --hard HEAD~1'\n")
         except FileNotFoundError:
             ret = 1
-            print("Fail to create xbuild alias profile file")
+            print("Fail to create xbuild alias profile file: " + file)
         return ret
 
 class Helper:
