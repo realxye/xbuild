@@ -61,12 +61,15 @@ export BASHCOLOR_ITALIC_LIGHT_CYAN="\e[3;96m"
 export BASHCOLOR_ITALIC_WHITE="\e[3;97m"
 
 # Check XBuild profile
-if [ ! -f ~/xbuild.profile ]; then
+if [ ! -d ~/.xbuild ]; then
+    mkdir -p ~/.xbuild
+fi
+if [ ! -f ~/.xbuild/xbuild.profile ]; then
     xbuild-print "XBuild profile doesn't exist, try to initialize xbuild ... "
     # Create xbuild user profiles: ~/xbuild.profile, ~/xbuild.alias
     $( python xbuild.py init >/dev/null 2>&1)
-    #$( touch ~/xbuild.profile >/dev/null 2>&1 )
-    if [ -f ~/xbuild.profile ]; then
+    #$( touch ~/.xbuild/xbuild.profile >/dev/null 2>&1 )
+    if [ -f ~/.xbuild/xbuild.profile ]; then
         xbuild-print "Done"
     else
         xbuild-print "Failed" red b
@@ -79,21 +82,31 @@ fi
 
 # Append xbuild bashrc
 XBUILD_BASHRC="$XBUILDROOT/xbuild\.bashrc"
+if [ -f ~/.bashrc ]; then
+    BASH_PROFILE=~/.bashrc
+else
+    if [ -f ~/.bash_profile ]; then
+        BASH_PROFILE=~/.bash_profile
+    else
+        xbuild-print "ERROR: .bashrc or .bash_profile doesn't exist" red b
+        return
+    fi
+fi
 #echo "XBUILD_BASHRC=\"$XBUILD_BASHRC\""
-XBUILD_BASHRC_INVOKE=$( cat ~/.bashrc | grep "$XBUILD_BASHRC" )
+XBUILD_BASHRC_INVOKE=$( cat $BASH_PROFILE | grep "$XBUILD_BASHRC" )
 #echo "XBUILD_BASHRC_INVOKE=\"$XBUILD_BASHRC_INVOKE\""
 if [ "$XBUILD_BASHRC_INVOKE" == "" ]; then
     echo "Add xbuild.bashrc to user bash profile"
-    echo "" >> ~/.bashrc
-    echo "# XBUILD bash profile" >> ~/.bashrc
-    echo "source \"$XBUILDROOT/xbuild.bashrc\"" >> ~/.bashrc
-    echo "" >> ~/.bashrc
+    echo "" >> $BASH_PROFILE
+    echo "# XBUILD bash profile" >> $BASH_PROFILE
+    echo "source \"$XBUILDROOT/xbuild.bashrc\"" >> $BASH_PROFILE
+    echo "" >> $BASH_PROFILE
 fi
 
 # Launch xbuild profile and alias
-source ~/xbuild.profile
-if [ -f ~/xbuild.alias ]; then
-    source ~/xbuild.alias
+source ~/.xbuild/xbuild.profile
+if [ -f ~/.xbuild/xbuild.alias ]; then
+    source ~/.xbuild/xbuild.alias
 fi
 
 # Export Xbuild Tools
@@ -180,8 +193,8 @@ xbuild-start-ssh
 export MSYS_NO_PATHCONV=1
 XBUILD_HOST_PASSWORD=`xbuild-hostpassword`
 
-if [ ! -f ~/xbuild-host.pfx ]; then
-    cd ~/
+if [ ! -f ~/.xbuild/xbuild-host.pfx ]; then
+    cd ~/.xbuild
     xbuild-gencert xbuild-host
     if [ -f xbuild-host.pfx ]; then
         XBUILD_HOST_PFX=created
@@ -251,11 +264,11 @@ if [ "$XBUILD_WORKSPACE_ROOT" == "$XBUILDROOT" ]; then
     xbuild-print "XBUILD Warning: Workspace root is set to XBUILDROOT, change it by updating \"XBUILD_WORKSPACE_ROOT\" variable in \"~/xbuild.profile\"" yellow i
 fi
 
-if [ -f ~/xbuild-host.pfx ]; then
+if [ -f ~/.xbuild/xbuild-host.pfx ]; then
     HOST_VERT_IN_STORE=`xbuild-findcert`
     #echo "HOST_VERT_IN_STORE=$HOST_VERT_IN_STORE"
     if [ "$HOST_VERT_IN_STORE" == "" ]; then
-        xbuild-print "XBUILD Warning: XBUILD host certificate file '~/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..." yellow i
+        xbuild-print "XBUILD Warning: XBUILD host certificate file '~/.xbuild/xbuild-host-cert.pem' has NOT been imported, please add it to your system cert store 'Trusted Root Certification Authorities' ..." yellow i
         # Following command require Admin privilege
         # certutil.exe -addstore "Root" C:/Users/engineer/xbuild-host-cert.pem
         # certutil.exe -importpfx ~/xbuild-host.pfx
