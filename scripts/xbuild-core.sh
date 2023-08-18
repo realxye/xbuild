@@ -55,6 +55,22 @@ xbuild-unix2dospath()
     echo "$1"
 }
 
+# get git branch name
+function xbuild_parse_git_branch()
+{
+    git branch 2> /dev/null | sed -n -e 's/^\* \(.*\)/(\1)/p'
+}
+
+function xbuild_parse_git_branch_ps_name()
+{
+    BRANCH=`xbuild_parse_git_branch`
+    if [ "$BRANCH" == "" ]; then
+        echo ""
+    else
+        echo " $BRANCH"
+    fi
+}
+
 # Get and export os name, currently xbuild only supports following OS
 #    - Windows
 #    - Linux

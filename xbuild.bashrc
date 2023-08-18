@@ -60,6 +60,9 @@ export BASHCOLOR_ITALIC_LIGHT_MAGENTA="\033[3;95m"
 export BASHCOLOR_ITALIC_LIGHT_CYAN="\033[3;96m"
 export BASHCOLOR_ITALIC_WHITE="\033[3;97m"
 
+# Set git branch name
+export PS1="\[\e[31m\][\[\e[m\]\[\e[38;5;172m\]\u\[\e[m\]@\[\e[38;5;153m\]\h\[\e[m\] \[\e[38;5;214m\]\W\[\e[m\]\[\e[32m\]\\[\$(xbuild_parse_git_branch_ps_name)\\]\[\e[m\]\[\e[31m\]]\[\e[m\]\\$ "
+
 # Check XBuild profile
 if [ ! -d ~/.xbuild ]; then
     mkdir -p ~/.xbuild
