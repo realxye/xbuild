@@ -1,8 +1,5 @@
-if(NOT XBUILD_PLATFORM_IOS)
-    message(FATAL_ERROR "xbuild-platform-ios: XBUILD_PLATFORM_IOS is not set")
-endif()
 
-# Set common data
-set(XBUILD_PLATFORM_STRING "iOS")
-set(XBUILD_PLATFORM_MOBILE ON)
-set(XBUILD_PLATFORM_ARCH "arm64")
+# Ensure environment has been set
+if (NOT RBX_ENV_MACOS)
+    message(FATAL_ERROR "Unsupported build environment. iOS target can only be built on Mac")
+endif()
