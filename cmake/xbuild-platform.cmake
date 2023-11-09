@@ -7,7 +7,19 @@ XBuild support 5 target platforms:
     - Android (arm, arm64)
 ]]
 
-# Ensure environment has been set
-if (NOT RBX_ENV_WINDOWS AND NOT RBX_ENV_MACOS AND NOT RBX_ENV_LINUX)
-    message(FATAL_ERROR "Unsupported build environment. rbx-cmake only supports Windows, MacOS and Linux build environment.")
+# Ensure target platform has been set
+if (XBD_OPT_BUILD_PLATFORM STREQUAL "unknown")
+    message(FATAL_ERROR "Target platform is not defined")
+elseif (XBD_OPT_BUILD_PLATFORM STREQUAL "windows")
+    include(xbuild-platform-windows)
+elseif (XBD_OPT_BUILD_PLATFORM STREQUAL "macos")
+    include(xbuild-platform-macos)
+elseif (XBD_OPT_BUILD_PLATFORM STREQUAL "ios")
+    include(xbuild-platform-ios)
+elseif (XBD_OPT_BUILD_PLATFORM STREQUAL "linux")
+    include(xbuild-platform-linux)
+elseif (XBD_OPT_BUILD_PLATFORM STREQUAL "android")
+    include(xbuild-platform-android)
+else
+    message(FATAL_ERROR "Unknown target platform (${XBD_OPT_BUILD_PLATFORM})")
 endif()

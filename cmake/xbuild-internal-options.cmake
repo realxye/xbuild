@@ -4,7 +4,7 @@ include_guard(GLOBAL)
 XBuild internal options
 ]]
 
-rbx_option_bool(
+xbd_option_bool(
   NAME
     XBD_OPT_DISABLE_OPTIMIZATION
   DESCRIPTION
@@ -14,7 +14,7 @@ rbx_option_bool(
   DEFINE_PREPROCESSOR
 )
 
-rbx_option_bool(
+xbd_option_bool(
   NAME
     XBD_OPT_DEBUG_VERBOSE
   DESCRIPTION
@@ -23,7 +23,7 @@ rbx_option_bool(
     OFF
 )
 
-rbx_option_bool(
+xbd_option_bool(
   NAME
     XBD_OPT_BUILD_TIMING
   DESCRIPTION
@@ -32,7 +32,24 @@ rbx_option_bool(
     OFF
 )
 
-rbx_option_bool(
+xbd_option_string(
+  NAME
+    XBD_OPT_BUILD_PLATFORM
+  DESCRIPTION
+    "The build's target platform"
+  CHOICES
+    windows macos ios linux android unknown
+  MAKE_AVAILABLE_IF
+    "${CMAKE_SYSTEM_NAME} MATCHES Windows" windows
+    "${CMAKE_SYSTEM_NAME} MATCHES Darwin" macos
+    "${CMAKE_SYSTEM_NAME} MATCHES Linux" linux
+  DEFAULT
+    unknown
+  TOLOWER
+  DEFINE_PREPROCESSOR
+)
+
+xbd_option_bool(
   NAME
     XBD_OPT_TREAT_WARNINGS_AS_ERRORS
   DESCRIPTION
@@ -41,7 +58,7 @@ rbx_option_bool(
     ON
 )
 
-rbx_option_string(
+xbd_option_string(
   NAME
     XBD_OPT_USE_SANITIZER
   DESCRIPTION
