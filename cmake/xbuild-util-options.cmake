@@ -73,7 +73,7 @@ function(xbd_option_string)
         endif()
     endif()
 
-    message(STATUS "Roblox Option: string ${XBD_STRING_OPT_NAME} = ${${XBD_STRING_OPT_NAME}}")
+    message(STATUS "XBuild Option: string ${XBD_STRING_OPT_NAME} = ${${XBD_STRING_OPT_NAME}}")
 endfunction()
 
 # Exposes a CMake option / cache variable whose value is a boolean.  This offers additional functionality over option().  Specifically:
@@ -147,7 +147,7 @@ function(xbd_option_bool)
     endif()
 
     set(FINAL_OPTION_VALUE ${${XBD_BOOL_OPT_NAME}})
-    message(STATUS "Roblox Option: bool ${XBD_BOOL_OPT_NAME} = ${FINAL_OPTION_VALUE}")
+    message(STATUS "XBuild Option: bool ${XBD_BOOL_OPT_NAME} = ${FINAL_OPTION_VALUE}")
 
     if (${XBD_BOOL_OPT_DEFINE_PREPROCESSOR} AND ${FINAL_OPTION_VALUE})
         add_compile_definitions(${XBD_BOOL_OPT_NAME})

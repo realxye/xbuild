@@ -6,7 +6,7 @@ include(FeatureSummary)
 # 🚨 NEVER EVER EVER EVER. CALL `project()` IN THIS CMakeLists.txt file!! 🚨
 set(CMAKE_DISABLE_IN_SOURCE_BUILD YES CACHE BOOL "Prevents accidental cmake -B. -S.")
 set(CMAKE_MESSAGE_CONTEXT_SHOW YES)
-set(CMAKE_MESSAGE_CONTEXT rbx)
+set(CMAKE_MESSAGE_CONTEXT xbuild)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MESSAGE_CONTEXT prelude)

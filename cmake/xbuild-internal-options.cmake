@@ -46,7 +46,6 @@ xbd_option_string(
   DEFAULT
     unknown
   TOLOWER
-  DEFINE_PREPROCESSOR
 )
 
 xbd_option_bool(
