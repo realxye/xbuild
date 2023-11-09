@@ -6,14 +6,14 @@ this file at the very begin before call project()
 ]]
 
 # Include utilities
-include(rbx-util-options)
-include(rbx-internal-options)
-include(rbx-util-log)
-include(rbx-util-core)
-include(rbx-util-find)
-include(rbx-util-cmake)
+include(xbuild-util-options)
+include(xbuild-internal-options)
+include(xbuild-util-log)
+include(xbuild-util-core)
+include(xbuild-util-find)
+include(xbuild-util-cmake)
 
 # Include build related scripts
-include(rbx-env)
-include(rbx-platform)
-include(rbx-compiler)
+include(xbuild-env)
+include(xbuild-platform)
+include(xbuild-compiler)
