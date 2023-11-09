@@ -227,34 +227,34 @@ xbuild-cmake()
     fi
     if [ "$MP_PLATFORM" == "windows" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
-            CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_WINDOWS=ON"
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=windows"
         else
             xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "macos" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
-            CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_MACOS=ON"
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=macos"
         else
             xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "ios" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
-            CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_IOS=ON"
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=ios"
         else
             xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "linux" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
-            CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_LINUX=ON"
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=linux"
         else
             xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "android" ]; then
-        CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_ANDROID=ON"
+        CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=android"
     else
         xbuild-print "ERROR: Invalid target platform ($MP_PLATFORM)" red b
         return

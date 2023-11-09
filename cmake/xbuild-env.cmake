@@ -14,5 +14,5 @@ else()
         include(xbuild-env-macos)
     else()
         include(xbuild-env-linux)
-    endif
+    endif()
 endif()

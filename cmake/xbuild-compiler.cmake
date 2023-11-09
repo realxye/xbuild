@@ -1,5 +1,15 @@
 include_guard(GLOBAL)
 
+# Enable Language
+enable_language(C)
+enable_language(CXX)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  enable_language(ASM_MASM)
+elseif ((CMAKE_SYSTEM_NAME STREQUAL "iOS") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
+  enable_language(OBJC)
+  enable_language(OBJCXX)
+endif()
+
 # Output debug information: compiler
 if (XBD_OPT_DEBUG_VERBOSE)
     message("[XBD] CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")

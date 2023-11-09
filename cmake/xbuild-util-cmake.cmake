@@ -129,6 +129,8 @@ function(xbd_add_executable target)
     # Add Sources.cmake to target if it exists.
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
         target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
+        include (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
+        message("  - Found (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
     endif()
 
     # By default, put 'src' in Include list
@@ -189,6 +191,8 @@ function (xbd_add_library target)
       target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
       if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
         target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
+        include (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
+        message("  - Found (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
       endif()
     endif()
 endfunction()
@@ -201,10 +205,12 @@ function (xbd_set_kernel_mode target)
         get_target_property(target_type ${target} TYPE)
         if (target_type STREQUAL "SHARED")
             # Target is a Windows Driver
+			add_compile_options(MT)
         elseif (target_type STREQUAL "STATIC")
             # Target is a Windows Kernel Library
-        else
-            message(FATAL_ERROR "xbd_set_kernel_mode() doesn't support target type")
+			add_compile_options(MT)
+        else()
+            message(FATAL_ERROR "xbd_set_kernel_mode does not support target type")
         endif()
         set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
     else()
@@ -223,6 +229,9 @@ function (xbd_add_kernel_library target)
         if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/include")
             target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
         endif()
+		# By default, put 'src' in Include list
+		target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
+		# Add Sources.cmake to target if it exists.
         if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
             target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
         endif()
@@ -242,6 +251,9 @@ function (xbd_add_kernel_driver target)
         if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/include")
             target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
         endif()
+		# By default, put 'src' in Include list
+		target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
+		# Add Sources.cmake to target if it exists.
         if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
             target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
         endif()
