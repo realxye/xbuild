@@ -208,7 +208,7 @@ xbuild-cmake()
         elif [[ "${argv[i]}" == -D* ]]; then
             CMAKE_DEFS="$CMAKE_DEFS ${argv[i]}"
         else
-            echo "WARNING: Unknown parameter \"${argv[i]}\""
+            xbuild-print "WARNING: Unknown parameter \"${argv[i]}\"" yellow i
         fi
     done
 
@@ -221,7 +221,7 @@ xbuild-cmake()
         elif [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
             MP_PLATFORM=linux
         else
-            echo "ERROR: Unsupported host"
+            xbuild-print "ERROR: Unsupported host"
             return
         fi
     fi
@@ -229,34 +229,34 @@ xbuild-cmake()
         if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
             CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_WINDOWS=ON"
         else
-            echo "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment"
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "macos" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
             CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_MACOS=ON"
         else
-            echo "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment"
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "ios" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
             CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_IOS=ON"
         else
-            echo "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment"
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "linux" ]; then
         if [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
             CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_LINUX=ON"
         else
-            echo "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment"
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
             return
         fi
     elif [ "$MP_PLATFORM" == "android" ]; then
         CMAKE_DEFS="$CMAKE_DEFS -DXBD_PLATFORM_ANDROID=ON"
     else
-        echo "ERROR: Invalid target platform ($MP_PLATFORM)"
+        xbuild-print "ERROR: Invalid target platform ($MP_PLATFORM)" red b
         return
     fi
 
@@ -283,7 +283,7 @@ xbuild-cmake()
             CMAKE_GENERATOR="Visual Studio 17 2022"
             CMAKE_TOOLSET="-T ClangCL"
         else
-            echo "ERROR: Unsupported host"
+            xbuild-print "ERROR: Unsupported host" red b
             return
         fi
 
@@ -296,10 +296,10 @@ xbuild-cmake()
         elif [ "$MP_ARCH" == "arm64" ]; then
             CMAKE_ARCH="-A arm64"
         elif [ "$MP_ARCH" == "" ]; then
-            echo "ERROR: Architecture is not defined"
+            xbuild-print "ERROR: Architecture is not defined" red b
             return
         else
-            echo "ERROR: Unsupported architecture ($MP_ARCH)"
+            xbuild-print "ERROR: Unsupported architecture ($MP_ARCH)" red b
             return
         fi
     elif [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
@@ -313,7 +313,7 @@ xbuild-cmake()
         CMAKE_TOOLSET=
         CMAKE_ARCH=
     else
-        echo "ERROR: Unsupported host"
+        xbuild-print "ERROR: Unsupported host" red b
         return
     fi
 
@@ -336,23 +336,25 @@ xbuild-cmake()
         if [ "$MP_VERBOSE" == "debug" ]; then
             echo "cmake -G \"$CMAKE_GENERATOR\" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . $CMAKE_DEFS | tee $LOGFILE"
         fi
+        cmake -G "$CMAKE_GENERATOR" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . $CMAKE_DEFS | tee $LOGFILE
     elif [ "$MP_VERB" == "build" ]; then
         # if verb is build, the cmake must be configured already
         if [ ! -f $CMAKE_OUTDIR/CMakeCache.txt ]; then
-            echo "ERROR: cmake files not found"
+            xbuild-print "ERROR: cmake files not found" red b
             return
         fi
         # check configure
         if [ "$MP_CONFIG" == "" ]; then
-            echo "ERROR: Config is not defined"
+            xbuild-print "ERROR: Config is not defined" red b
             return
         fi
         # exec cmake build
         if [ "$MP_VERBOSE" == "debug" ]; then
             echo "cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE"
         fi
+        cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE
     else
-        echo "ERROR: Unknown verb ($MP_VERB)"
+        xbuild-print "ERROR: Unknown verb ($MP_VERB)" red b
         return
     fi
 }
