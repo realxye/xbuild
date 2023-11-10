@@ -1,63 +1,110 @@
-# XBUILD CMAKE
+# RBX CMAKE
 
 ## Table of Content
 
-## Compilers
+- [Overview](#overview)
+- [Prelude](#prelude)
+- [Environment](#overview)
+- [Platform](#platform)
+- [Compiler](#compiler)
+- [Utilities](#utilities)
+  - [Options](#options)
+  - [Log](#log)
+  - [Find](#find)
+  - [Core](#core)
+  - [CMake](#cmake)
 
-XBuild support following compilers:
+## Overview
 
-- Microsoft Visual C++ (Windows Only)
-- Microsoft Clang (Windows Only)
-- AppleClang (Apple Only)
-- Clang (Any clang)
+| File | Description |
+|----------|-----------------|
+| **xbuild-prelude.cmake** | The master cmake file |
+| **xbuild-env.cmake** | The top level environment file |
+| **xbuild-env-windows.cmake** | The environment file for Windows |
+| **xbuild-env-linux.cmake** | The environment file for Linux |
+| **xbuild-env-macos.cmake** | The environment file for MacOS |
+| **xbuild-platform.cmake** | The top level target platform file |
+| **xbuild-platform-windows.cmake** | The target platform file for Windows |
+| **xbuild-platform-linux.cmake** | The target platform file for Linux |
+| **xbuild-platform-macos.cmake** | The target platform file for MacOS |
+| **xbuild-platform-ios.cmake** | The target platform file for iOS |
+| **xbuild-platform-android.cmake** | The target platform file for Android |
+| **xbuild-compiler.cmake** | The top level compiler file |
+| **xbuild-compiler-msvc.cmake** | The compiler file for MSVC |
+| **xbuild-compiler-llvm.cmake** | The compiler file for LLVM |
+| **xbuild-util-options.cmake** | Macros and functions to define options |
+| **xbuild-util-log.cmake** | Macros and functions for logging |
+| **xbuild-util-find.cmake** | Macros and functions to find packages |
+| **xbuild-util-core.cmake** | XBuild core macros and functions |
+| **xbuild-util-cmake.cmake** | Macros and functions for cmake |
+| | |
 
-## Target Platforms
+## Prelude
 
-XBuild support following platform:
+The `xbuild-prelude.cmake` is the master cmake file.
+
+## Environment
+
+`xbuild-cmake` supports 3 major developing environments:
 
 - Windows
-  - Win32 Desktop
-  - UWP (WIndows Store)
 - Linux
-- Android
-- Apple
+- MacOS
+
+The top level environment file (xbuild-env.cmake) contains common environment settings and include proper child environment file (xbuild-env-windows.cmake, xbuild-env.linux.cmake or xbuild-env-macos.cmake) according to current OS.
+
+## Platform
+
+`xbuild-cmake` supports 5 major target platforms and 4 architectures.
+
+- *Platforms*
+  - Windows
+  - Linux
   - MacOS
   - iOS
+  - Android
+- *Architectures*
+  - x86
+  - x64
+  - arm
+  - arm64
 
-## Target Type
+The top level platform file (rbx-platform.cmake) contains common platform and architecture settings and include proper child platform file according to input target platform and architecture macros.
 
-- Win32 GUI Application (Windows Only)
-- Windows Driver (Windows Only)
-- Console Application
-- Dynamic Linked Library
-- Static Library
+## Compiler
 
-## Target Configuration
+`xbuild-cmake` supports 2 major compilers `MSVC` and `LLVM`.
 
-XBuild has 3 target build configurations:
+- *MSVC*
+  - 2019
+  - 2022
+- *LLVM*
+  - Official LLVM
+  - MS LLVM
+  - Apple LLVM
 
-- Debug
-- Optimized
-- Release
+The top level compiler file (rbx-compiler.cmake) contains common compiler settings and include proper child compiler file according to input macros.
 
-### Debug
+## Utilities
 
-The debug build has no optimization and with full debug information.
+`xbuild-cmake` defines its own helper functions.
 
-### Optimized
+### Options
 
-The optimized build has all the optimization, but without perform any release job.
+The `xbuild-util-options.cmake` defines macros and functions to support Roblox options.
 
-### Release
+### Log
 
-The release build has all the optimizations and should perform all release jobs, for example:
+The `xbuild-util-log.cmake` defines macros and functions for loggings.
 
-- LTCG (Link Time Code Generation)
-- Strip Debug Information
-- Customized release steps
+### Find
 
-## Target Architeture
+The `xbuild-util-find.cmake` defines useful macros and functions to find packages.
 
-- x86
-- x64
-- arm64
+### Core
+
+The `rbx-util-core.cmake` defines useful core functions.
+
+### CMake
+
+The `rbx-util-cmake.cmake` defines useful cmake helper functions.

@@ -143,28 +143,28 @@ xbuild-make()
         elif [[ "${argv[i]}" == toolset=* ]]; then
             MP_TOOLSET=`echo "${argv[i]}" | cut -c 9-`
         else
-            echo "Warning: Unknown parameter \"${argv[i]}\""
+            echo "WARNING: Unknown parameter \"${argv[i]}\""
         fi
     done
 
     # Check config
-    if [ "$MP_CONFIG" == "" ]; then
-        echo "ERROR: Config is not defined"
-        echo "Usage: xbuild-make <config> <arch> [verbose]"
-    fi
 
     # Check arch
     if [ "$MP_ARCH" == "" ]; then
         echo "ERROR: Architecture is not defined"
-        echo "Usage: xbuild-make <config> <arch> [verbose]"
+        echo "Usage: xbuild-make <config> <arch> <toolset> [verbose]"
+        return
     fi
 
-    # Check arch
+    # Check toolset
     if [ "$MP_TOOLSET" == "" ]; then
-        MP_TOOLSET_VER=$XBUILD_TOOLCHAIN_DEFAULT_VS
-    else
-        MP_TOOLSET_VER=$MP_TOOLSET
+        if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+            MP_TOOLSET=$XBUILD_TOOLCHAIN_DEFAULT_VS
+        else
+            MP_TOOLSET=llvm
+        fi
     fi
+    MP_TOOLSET_VER=$MP_TOOLSET
 
     # prepare log file dir
     if [ ! -d output ]; then
@@ -172,8 +172,191 @@ xbuild-make()
     fi
     LOGTIME=`date "+%Y%m%d%H%M%S"`
     LOGFILE=output/$MP_TOOLSET_VER-$MP_CONFIG-$MP_ARCH-$LOGTIME.log
-    #echo "$XBUILDMAKE config=$MP_CONFIG arch=$MP_ARCH verbose=$MP_VERBOSE toolset=$MP_TOOLSET target=$MP_TARGET | tee $LOGFILE"
+    if [ "$MP_VERBOSE" == "debug" ]; then
+        echo "$XBUILDMAKE config=$MP_CONFIG arch=$MP_ARCH verbose=$MP_VERBOSE toolset=$MP_TOOLSET target=$MP_TARGET | tee $LOGFILE"
+    fi
     $XBUILDMAKE config=$MP_CONFIG arch=$MP_ARCH verbose=$MP_VERBOSE toolset=$MP_TOOLSET target=$MP_TARGET | tee $LOGFILE
+}
+
+xbuild-cmake()
+{
+    # Usage:
+    #   xbuild-cmake <verb> [platform] [config] [arch] [toolset] [verbose]
+    #   - verb: configure/build
+    #   - platform (optional): windows/linux/macos/ios/android
+    #   - config (optional): debug/release, only used when verb=build
+    #   - arch (optional): x86/x64/arm/arm64, only used on Windows
+    #   - toolset (optional): vs2019/vs2022/vs2019-llvm/vs2022-llvm, only used on Windows
+    #   - verbose (optional): true/debug, to show cmake normal information or debug information
+
+    # Check parameters
+    argc=$#
+    argv=("$@")
+    MP_VERB=${argv[0]}
+    CMAKE_DEFS=
+    for (( i=1; i<argc; i++ )); do
+        if [[ "${argv[i]}" == config=* ]]; then
+            MP_CONFIG=`echo "${argv[i]}" | cut -c 8-`
+        elif [[ "${argv[i]}" == platform=* ]]; then
+            MP_PLATFORM=`echo "${argv[i]}" | cut -c 10-`
+        elif [[ "${argv[i]}" == arch=* ]]; then
+            MP_ARCH=`echo "${argv[i]}" | cut -c 6-`
+        elif [[ "${argv[i]}" == verbose=* ]]; then
+            MP_VERBOSE=`echo "${argv[i]}" | cut -c 9-`
+        elif [[ "${argv[i]}" == toolset=* ]]; then
+            MP_TOOLSET=`echo "${argv[i]}" | cut -c 9-`
+        elif [[ "${argv[i]}" == -D* ]]; then
+            CMAKE_DEFS="$CMAKE_DEFS ${argv[i]}"
+        else
+            xbuild-print "WARNING: Unknown parameter \"${argv[i]}\"" yellow i
+        fi
+    done
+
+    # Check target platform
+    if [ "$MP_PLATFORM" == "" ]; then
+        if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+            MP_PLATFORM=windows
+        elif [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+            MP_PLATFORM=macos
+        elif [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
+            MP_PLATFORM=linux
+        else
+            xbuild-print "ERROR: Unsupported host"
+            return
+        fi
+    fi
+    if [ "$MP_PLATFORM" == "windows" ]; then
+        if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=windows"
+        else
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
+            return
+        fi
+    elif [ "$MP_PLATFORM" == "macos" ]; then
+        if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=macos"
+        else
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
+            return
+        fi
+    elif [ "$MP_PLATFORM" == "ios" ]; then
+        if [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=ios"
+        else
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
+            return
+        fi
+    elif [ "$MP_PLATFORM" == "linux" ]; then
+        if [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
+            CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=linux"
+        else
+            xbuild-print "ERROR: Target platform ($MP_PLATFORM) cannot be built in current environment" red b
+            return
+        fi
+    elif [ "$MP_PLATFORM" == "android" ]; then
+        CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_BUILD_PLATFORM=android"
+    else
+        xbuild-print "ERROR: Invalid target platform ($MP_PLATFORM)" red b
+        return
+    fi
+
+    # Check verbose
+    if [ "$MP_VERBOSE" == "debug" ]; then
+        CMAKE_DEFS="$CMAKE_DEFS -DXBD_OPT_DEBUG_VERBOSE=ON"
+    fi
+
+    # Check toolset
+    if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+        if [ "$MP_TOOLSET" == "" ]; then
+            MP_TOOLSET=$XBUILD_TOOLCHAIN_DEFAULT_VS
+        fi
+        if [ "$MP_TOOLSET" == "vs2019" ]; then
+            CMAKE_GENERATOR="Visual Studio 16 2019"
+            CMAKE_TOOLSET=
+        elif [ "$MP_TOOLSET" == "vs2019-llvm" ]; then
+            CMAKE_GENERATOR="Visual Studio 16 2019"
+            CMAKE_TOOLSET="-T ClangCL"
+        elif [ "$MP_TOOLSET" == "vs2022" ]; then
+            CMAKE_GENERATOR="Visual Studio 17 2022"
+            CMAKE_TOOLSET=
+        elif [ "$MP_TOOLSET" == "vs2022-llvm" ]; then
+            CMAKE_GENERATOR="Visual Studio 17 2022"
+            CMAKE_TOOLSET="-T ClangCL"
+        else
+            xbuild-print "ERROR: Unsupported host" red b
+            return
+        fi
+
+        if [ "$MP_ARCH" == "x86" ]; then
+            CMAKE_ARCH="-A x86"
+        elif [ "$MP_ARCH" == "x64" ]; then
+            CMAKE_ARCH="-A x64"
+        elif [ "$MP_ARCH" == "arm" ]; then
+            CMAKE_ARCH="-A arm"
+        elif [ "$MP_ARCH" == "arm64" ]; then
+            CMAKE_ARCH="-A arm64"
+        elif [ "$MP_ARCH" == "" ]; then
+            xbuild-print "ERROR: Architecture is not defined" red b
+            return
+        else
+            xbuild-print "ERROR: Unsupported architecture ($MP_ARCH)" red b
+            return
+        fi
+    elif [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+        CMAKE_GENERATOR=Xcode
+        MP_TOOLSET=llvm
+        CMAKE_TOOLSET=
+        CMAKE_ARCH=
+    elif [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
+        CMAKE_GENERATOR=Xcode
+        MP_TOOLSET=llvm
+        CMAKE_TOOLSET=
+        CMAKE_ARCH=
+    else
+        xbuild-print "ERROR: Unsupported host" red b
+        return
+    fi
+
+    # prepare cmake output folder
+    CMAKE_OUTDIR=output/build.$MP_PLATFORM
+    if [ ! -d $CMAKE_OUTDIR ]; then
+        mkdir -p $CMAKE_OUTDIR
+    fi
+
+    # prepare log file dir
+    LOGTIME=`date "+%Y%m%d%H%M%S"`
+    LOGFILE=$CMAKE_OUTDIR/xbuild-$MP_VERB-$LOGTIME.log
+
+    if [ "$MP_VERB" == "configure" ]; then
+        # if verb is configure, we need to remove old cmake cache file
+        if [ -f $CMAKE_OUTDIR/CMakeCache.txt ]; then
+            rm $CMAKE_OUTDIR/CMakeCache.txt
+        fi
+        # exec cmake generate
+        if [ "$MP_VERBOSE" == "debug" ]; then
+            echo "cmake -G \"$CMAKE_GENERATOR\" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . $CMAKE_DEFS | tee $LOGFILE"
+        fi
+        cmake -G "$CMAKE_GENERATOR" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . $CMAKE_DEFS | tee $LOGFILE
+    elif [ "$MP_VERB" == "build" ]; then
+        # if verb is build, the cmake must be configured already
+        if [ ! -f $CMAKE_OUTDIR/CMakeCache.txt ]; then
+            xbuild-print "ERROR: cmake files not found" red b
+            return
+        fi
+        # check configure
+        if [ "$MP_CONFIG" == "" ]; then
+            xbuild-print "ERROR: Config is not defined" red b
+            return
+        fi
+        # exec cmake build
+        if [ "$MP_VERBOSE" == "debug" ]; then
+            echo "cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE"
+        fi
+        cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE
+    else
+        xbuild-print "ERROR: Unknown verb ($MP_VERB)" red b
+        return
+    fi
 }
 
 #
