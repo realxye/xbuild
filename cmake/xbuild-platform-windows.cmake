@@ -36,7 +36,7 @@ if(MSVC)
     # Since 3.18.0 CMake changed `<CMAKE_LINKER> /lib` to `<CMAKE_AR>` in `CMAKE_{lang}_CREATE_STATIC_LIBRARY` commands,
     # `lib.exe` is meant by `CMAKE_AR`: https://gitlab.kitware.com/cmake/cmake/-/commit/55196a1440e26917d40e6a7a3eb8d9fb323fa657
     # Better solution would be to update toolchains (use `lib.exe` instead of `link.exe`) and params passed to configs by
-    # `common.py` (`CMAKE_LINKER` to `CMAKE_AR`). See https://jira.rbx.com/browse/CLI-35509.
+    # `common.py` (`CMAKE_LINKER` to `CMAKE_AR`).
     set(CMAKE_CXX_CREATE_STATIC_LIBRARY  "<CMAKE_LINKER> /lib ${CMAKE_CL_NOLOGO} <LINK_FLAGS> /out:<TARGET> <OBJECTS> ")
     set(CMAKE_C_CREATE_STATIC_LIBRARY  "<CMAKE_LINKER> /lib ${CMAKE_CL_NOLOGO} <LINK_FLAGS> /out:<TARGET> <OBJECTS> ")
 endif()

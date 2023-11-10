@@ -1,4 +1,4 @@
-# RBX CMAKE
+# XBUILD CMAKE
 
 ## Table of Content
 
@@ -69,7 +69,7 @@ The top level environment file (xbuild-env.cmake) contains common environment se
   - arm
   - arm64
 
-The top level platform file (rbx-platform.cmake) contains common platform and architecture settings and include proper child platform file according to input target platform and architecture macros.
+The top level platform file (xbuild-platform.cmake) contains common platform and architecture settings and include proper child platform file according to input target platform and architecture macros.
 
 ## Compiler
 
@@ -83,7 +83,7 @@ The top level platform file (rbx-platform.cmake) contains common platform and ar
   - MS LLVM
   - Apple LLVM
 
-The top level compiler file (rbx-compiler.cmake) contains common compiler settings and include proper child compiler file according to input macros.
+The top level compiler file (xbuild-compiler.cmake) contains common compiler settings and include proper child compiler file according to input macros.
 
 ## Utilities
 
@@ -103,8 +103,8 @@ The `xbuild-util-find.cmake` defines useful macros and functions to find package
 
 ### Core
 
-The `rbx-util-core.cmake` defines useful core functions.
+The `xbuild-util-core.cmake` defines useful core functions.
 
 ### CMake
 
-The `rbx-util-cmake.cmake` defines useful cmake helper functions.
+The `xbuild-util-cmake.cmake` defines useful cmake helper functions.
