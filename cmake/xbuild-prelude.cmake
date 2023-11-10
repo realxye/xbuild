@@ -15,5 +15,5 @@ include(xbuild-util-cmake)
 
 # Include build related scripts
 include(xbuild-env)
-include(xbuild-platform)
 include(xbuild-compiler)
+include(xbuild-platform)

@@ -12,8 +12,10 @@ endif()
 SET(XBD_CLANG ON)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     SET(XBD_CL_APPLE_CLANG ON)
+    message(STATUS "Compiler: Apple Clang")
 elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
     SET(XBD_CL_MSVC_CLANG ON)
+    message(STATUS "Compiler: MSVC Clang")
 else()
     message(FATAL_ERROR "Compiler (${CMAKE_CXX_COMPILER_ID}) is unsupported")
 endif()
@@ -29,50 +31,6 @@ add_compile_options(-Wrange-loop-analysis)
 
 # Generic cl options that are needed with MSVC CL or clang-cl
 if(XBD_CL_MSVC_CLANG)
-    # Reproducible builds
-    add_compile_options(/Brepro)
-    add_link_options(/Brepro)
-
-    add_compile_options(/EHsc) # Default exception handling model
-
-    # This flag is very important for correct floating point behavior.  Under VS2015 it was
-    # possible to use /fp:fast, but starting with VS2017 the optimizations have gotten more
-    # aggressive with behavior surrounding Inf and NaN and it's no longer safe to use
-    # /fp:fast with Roblox code.
-    add_compile_options(/fp:precise) # Floating Point Model
-
-    add_compile_options(/Oy-) # OmitFramePointers false
-    add_compile_options(/GR) # Enable Run-Time Type Information
-
-    ### WARNINGS
-    add_compile_options(/WX) # Treat warnings as errors
-    add_compile_options(/W3) # Enable warnings up to level 3 on msvc and -Wall on clang
-
-    # TODO (CLI-43749) consolidate more cross-compiler compile options into rbx_add_compile_option
-    rbx_add_compile_option(-Wno-switch /we4062) # All enumerators in a switch must be handled by an explicit or default case
-
-    add_compile_options(/we4477) # Format string argument type mismatch
-    add_compile_options(/wd4018) # Signed/Unsigned mismatch
-    add_compile_options(/we4189) # local variable is initialized but not referenced (level 4)
-
-    # C4731: frame pointer register 'ebx' modified by inline assembly code
-    # This warning is triggered by inline assembly in our VMProtect markers when LTCG is used
-    # for codegen. Disable it to get VMProtect working with LTCG.
-    add_compile_options(/wd4731)
-
-    # These are some other warnings that are worth considering but that we are not enabling:
-    # C4101: Unreferenced local variable. This is a level 3 warning so it's already enabled (unless we change the default warning level).
-    add_compile_options(/we4101)
-    # C4100: Unreference formal parameter. There's not an equivalent warning in clang and we want all targets to error the same way.
-    add_compile_options(/we4100)
-    # C4505: Unused local function has been removed. This is very similar to -Wunused-function and we may want to enable it in the future
-    #        to improve consistency with clang. However, to enable it we would have to fix many errors and this needs to be studied in more
-    #        detail.
-    add_compile_options(/we4505)
-
-    #
-    # clang-cl only options
-    #
     add_compile_options(-Wno-unknown-warning-option)
 
     add_compile_options(-Wno-microsoft-include)
@@ -112,7 +70,6 @@ if(XBD_CL_MSVC_CLANG)
     add_compile_options(-Wno-microsoft-unqualified-friend)
     add_compile_options(-Wno-delete-incomplete)
     add_compile_options(-Wno-non-pod-varargs)
-    add_compile_options(-Wno-switch) # All enumerators in a switch must be handled by an explicit or default case
 
     # ppltasks.h, which is a Microsoft header uses some non-conformant C++ that
     # clang-cl rejects. Luckily they provide a workaround for this in their
@@ -125,9 +82,7 @@ if(XBD_CL_MSVC_CLANG)
     add_compile_options(-Wno-unused-variable)
     # clang-12: clang-cl.exe error: argument unused during compilation: '/GL'
     add_compile_options(-Wno-unused-command-line-argument)
-endif()
-
-if(NOT XBD_CL_MSVC_CLANG)
+else()
     # Report libc++ version, or fail if libc++ doesn't work for some reason.
     #   - This check is informative only.
     #   - This check is disabled for Xcode, which throws error on it.
@@ -156,7 +111,7 @@ if(NOT XBD_CL_MSVC_CLANG)
     add_compile_options(-fno-math-errno)
 
     add_compile_options(-Wall)
-    add_compile_options($<$<BOOL:${XBD_OPT_TREAT_WARNINGS_AS_ERRORS}>:-Werror>)
+    add_compile_options(-Werror)
 
     # We use -Wno-unknown-warning-option because we support various different versions of
     # clang in order to be able to experiment with newer compiler versions, and some of

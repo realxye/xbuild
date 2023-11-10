@@ -10,6 +10,9 @@ elseif ((CMAKE_SYSTEM_NAME STREQUAL "iOS") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwi
   enable_language(OBJCXX)
 endif()
 
+# set project configuration
+include(xbuild-compiler-config)
+
 # Output debug information: compiler
 if (XBD_OPT_DEBUG_VERBOSE)
     message("[XBD] CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
@@ -33,6 +36,3 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 else()
     message(FATAL_ERROR "Compiler (${CMAKE_CXX_COMPILER_ID}) is unsupported")
 endif()
-
-# set project configuration
-include(xbuild-compiler-config)

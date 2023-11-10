@@ -32,6 +32,15 @@ xbd_option_bool(
     OFF
 )
 
+xbd_option_bool(
+  NAME
+    XBD_OPT_ENABLE_LTCG
+  DESCRIPTION
+    "Enable LTCG"
+  DEFAULT
+    OFF
+)
+
 xbd_option_string(
   NAME
     XBD_OPT_BUILD_PLATFORM

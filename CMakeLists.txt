@@ -14,15 +14,6 @@ list(APPEND CMAKE_MESSAGE_CONTEXT prelude)
 include(xbuild-prelude)
 
 set(XBUILD_PRELUDE_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake" CACHE PATH "XBuild CMake Prelude directory")
-#set(RBX_PRELUDE_MODULES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/modules" CACHE PATH "Roblox CMake Prelude cmake modules directory")
-
-#if (NOT CMAKE_TOOLCHAIN_FILE AND RBX_PRELUDE_TOOLCHAIN)
-#    set(toolchain "${CMAKE_CURRENT_SOURCE_DIR}/toolchains/${RBX_PRELUDE_TOOLCHAIN}.cmake")
-#    if (NOT EXISTS "${toolchain}")
-#        message(FATAL_ERROR "RBX Prelude toolchain file ${RBX_PRELUDE_TOOLCHAIN} does not exist on disk")
-#    endif()
-#    set(CMAKE_TOOLCHAIN_FILE "${toolchain}" CACHE FILEPATH "CMake Toolchain File")
-#endif()
 
 if (DEFINED ENV{XBUILD_FETCHCONTENT_BASE_DIR})
     # We use FORCE because the FetchContent for prelude sets FETCHCONTENT_BASE_DIR, which we want to override for all further fetched content
