@@ -15,7 +15,7 @@ include(xbuild-compiler-config)
 
 # Output debug information: compiler
 if (XBD_OPT_DEBUG_VERBOSE)
-    message("[XBD] CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+    message(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
 # Clear all
