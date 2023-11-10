@@ -94,8 +94,8 @@ else()
     if(NOT("${CMAKE_GENERATOR}" STREQUAL "Xcode") AND NOT CMAKE_SYSTEM_NAME STREQUAL "ORBIS" AND NOT CMAKE_SYSTEM_NAME STREQUAL "Prospero")
         try_compile(
             LIBCPP_COMPILE_RESULT                                   # <resultVar>
-            "${RBX_BINARY_DIR}/TryCompile"                          # <bindir>
-            "${RBX_SOURCE_DIR}/cmake/TryCompile/LibCppVersion"      # <srcdir>
+            "${XBD_BINARY_DIR}/TryCompile"                          # <bindir>
+            "${XBD_SOURCE_DIR}/cmake/TryCompile/LibCppVersion"      # <srcdir>
             PrintLibCppVersion                                      # <projectName>
             OUTPUT_VARIABLE LIBCPP_COMPILE_OUTPUT
             )

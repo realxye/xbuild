@@ -17,7 +17,7 @@ set(XBUILD_PRELUDE_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake" CACHE PATH "XBu
 
 if (DEFINED ENV{XBUILD_FETCHCONTENT_BASE_DIR})
     # We use FORCE because the FetchContent for prelude sets FETCHCONTENT_BASE_DIR, which we want to override for all further fetched content
-    set(FETCHCONTENT_BASE_DIR "$ENV{RBX_FETCHCONTENT_BASE_DIR}" CACHE PATH "Override FetchContent cache dir outside of the build tree to this path" FORCE)
+    set(FETCHCONTENT_BASE_DIR "$ENV{XBUILD_FETCHCONTENT_BASE_DIR}" CACHE PATH "Override FetchContent cache dir outside of the build tree to this path" FORCE)
 endif()
 
 # Non-top-level CMake
@@ -43,7 +43,7 @@ set(CMAKE_RC_FLAGS_INIT "-nologo" PARENT_SCOPE)
 
 # We do not want the average person calling these functions.
 # They are reserved for the prelude. Hence the 🈯 (reserved) emoji.
-#cmake_language(CALL 🈯::rbx::prelude::cmake-file-api)
-#cmake_language(CALL 🈯::rbx::prelude::properties)
-#cmake_language(CALL 🈯::rbx::prelude::policies)
-#cmake_language(CALL 🈯::rbx::prelude::globals)
+#cmake_language(CALL 🈯::xbuild::prelude::cmake-file-api)
+#cmake_language(CALL 🈯::xbuild::prelude::properties)
+#cmake_language(CALL 🈯::xbuild::prelude::policies)
+#cmake_language(CALL 🈯::xbuild::prelude::globals)
