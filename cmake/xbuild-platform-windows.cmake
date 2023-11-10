@@ -74,7 +74,7 @@ macro(xbd_make_platform_defs VERSION SERVICE_PACK)
         WINVER=${VERSION}
         NTDDI_VERSION=${VERSION}${SERVICE_PACK}
     )
-endmacro(MAKE_PLATFORM_DEFS)
+endmacro(xbd_make_platform_defs)
 
 macro(xbd_target_windows_7)
     xbd_make_platform_defs(0x0601 0000)
