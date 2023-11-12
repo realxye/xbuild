@@ -45,6 +45,7 @@ string (REPLACE "/D_WINDOWS" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # Set predefines
 #   - XBuild predefines
+message(STATUS "Set compile definitions")
 add_compile_definitions(XBD_PLATFORM_WINDOWS)
 add_compile_definitions(XBD_PLATFORM_NAME="${XBD_PLATFORM_NAME}")
 add_compile_definitions(XBD_PLATFORM_DESKTOP)
@@ -56,14 +57,16 @@ add_compile_definitions(NOMINMAX)
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
 
 # Set compile options
+message(STATUS "Set compile options")
 add_compile_options("$<$<CONFIG:Release>:/O2;/Ob2;/Oi;/Gy;/GF;/GS->")
 add_compile_options($<$<CONFIG:Release>:${debug-information-format}>)
 
 # Set link options
+message(STATUS "Set link options")
 if(MSVC)
     add_link_options(/LARGEADDRESSAWARE /DEBUG:FULL)
 endif()
-add_link_options("$<$<CONFIG:Optimized>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF>")
+add_link_options("$<$<CONFIG:Debug>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF>")
 add_link_options("$<$<CONFIG:Release>:/INCREMENTAL:NO;/OPT:REF;/OPT:ICF>")
 
 # Macro to make platform defines

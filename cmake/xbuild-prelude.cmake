@@ -13,7 +13,3 @@ include(xbuild-util-core)
 include(xbuild-util-find)
 include(xbuild-util-cmake)
 
-# Include build related scripts
-include(xbuild-env)
-include(xbuild-compiler)
-include(xbuild-platform)

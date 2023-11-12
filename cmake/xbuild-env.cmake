@@ -7,6 +7,9 @@ XBuild support 3 development environment:
     - Linux
 ]]
 
+# Global settings
+set_property(GLOBAL PROPERTY GLOBAL_DEPENDS_NO_CYCLES ON)
+
 if (DEFINED WIN32)
     include(xbuild-env-windows)
 else()
