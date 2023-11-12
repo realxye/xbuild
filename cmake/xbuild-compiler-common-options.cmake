@@ -11,6 +11,7 @@ add_compile_options(
 
 if (WIN32)
     # Common option for Widnows
+    message(STATUS "Add common options for Widnows")
     # - Reproducible builds
     add_compile_options(/Brepro)
     add_link_options(/Brepro)
@@ -49,6 +50,7 @@ if (WIN32)
     add_compile_options(/we4505)
 else()
     # Common options for Non-Windows
+    message(STATUS "Add common options for Non-Widnows")
     # - All enumerators in a switch must be handled by an explicit or default case
     add_compile_options(-Wno-switch)
 endif()
