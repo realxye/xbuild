@@ -197,69 +197,114 @@ function (xbd_add_library target)
     endif()
 endfunction()
 
-# This function set properties for Widnows kernel mode target
-function (xbd_set_kernel_mode target)
-    # Windows Only
-    if (WIN32)
-        add_compile_definitions(XBD_KERNEL_MODE)
-        get_target_property(target_type ${target} TYPE)
-        if (target_type STREQUAL "SHARED")
-            # Target is a Windows Driver
-			add_compile_options(MT)
-        elseif (target_type STREQUAL "STATIC")
-            # Target is a Windows Kernel Library
-			add_compile_options(MT)
-        else()
-            message(FATAL_ERROR "xbd_set_kernel_mode does not support target type")
-        endif()
-        set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-    else()
-        message(FATAL_ERROR "xbd_set_kernel_mode() only supports Windows platform")
-    endif()
-endfunction()
-
 # This function add a Widnows kernel Mode library
 function (xbd_add_kernel_library target)
     # Windows Only
-    if (WIN32)
-        set(XBD_KERNEL_MODE ON)
-        add_library(${target} STATIC)
-        xbd_set_kernel_mode(${target})
-        set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        set_target_properties(${target} PROPERTIES FOLDER libs)
-        if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/include")
-            target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-        endif()
-		# By default, put 'src' in Include list
-		target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
-		# Add Sources.cmake to target if it exists.
-        if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
-            target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
-        endif()
-    else()
+    if (NOT WIN32)
         message(FATAL_ERROR "xbd_add_kernel_library() only supports Windows platform")
+        return()
+    endif()
+
+    # Ensure WDK is installed
+    find_package(WDK REQUIRED)
+
+    # Add target
+    cmake_parse_arguments(WDK "" "KMDF;WINVER;NTDDI_VERSION" "" ${ARGN})
+    add_library(${target} STATIC)
+
+    # Set compile options
+    set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${WDK_COMPILE_FLAGS}")
+    set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS
+        "${WDK_COMPILE_DEFINITIONS};$<$<CONFIG:Debug>:${WDK_COMPILE_DEFINITIONS_DEBUG};>_WIN32_WINNT=${WDK_WINVER}"
+        )
+    if(WDK_NTDDI_VERSION)
+        target_compile_definitions(${target} PRIVATE NTDDI_VERSION=${WDK_NTDDI_VERSION})
+    endif()
+
+    target_include_directories(${target} SYSTEM PRIVATE
+        "${WDK_ROOT}/Include/${WDK_VERSION}/shared"
+        "${WDK_ROOT}/Include/${WDK_VERSION}/km"
+        "${WDK_ROOT}/Include/${WDK_VERSION}/km/crt"
+        )
+
+    if(DEFINED WDK_KMDF)
+        target_include_directories(${_target} SYSTEM PRIVATE "${WDK_ROOT}/Include/wdf/kmdf/${WDK_KMDF}")
+    endif()
+
+    set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+    set_target_properties(${target} PROPERTIES FOLDER libs)
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/include")
+        target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+    endif()
+	# By default, put 'src' in Include list
+	target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
+	# Add Sources.cmake to target if it exists.
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
+        target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
     endif()
 endfunction()
 
 # This function add a Widnows kernel Mode driver
 function (xbd_add_kernel_driver target)
     # Windows Only
-    if (WIN32)
-        set(XBD_KERNEL_MODE ON)
-        add_library(${target} SHARED)
-        xbd_set_kernel_mode(${target})
-        set_target_properties(${target} PROPERTIES FOLDER drivers)
-        set_target_properties(${target} PROPERTIES SUFFIX ".sys")
-        if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/include")
-            target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
-        endif()
-		# By default, put 'src' in Include list
-		target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
-		# Add Sources.cmake to target if it exists.
-        if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
-            target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
+    if (NOT WIN32)
+        message(FATAL_ERROR "xbd_add_kernel_driver() only supports Windows platform")
+        return()
+    endif()
+
+    # Ensure WDK is installed
+    find_package(WDK REQUIRED)
+
+    # Add target
+    cmake_parse_arguments(WDK "" "KMDF;WINVER;NTDDI_VERSION" "" ${ARGN})
+    add_executable(${target} ${WDK_UNPARSED_ARGUMENTS})
+
+    set_target_properties(${target} PROPERTIES FOLDER drivers)
+    set_target_properties(${target} PROPERTIES SUFFIX ".sys")
+    set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${WDK_COMPILE_FLAGS}")
+    set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS
+        "${WDK_COMPILE_DEFINITIONS};$<$<CONFIG:Debug>:${WDK_COMPILE_DEFINITIONS_DEBUG}>;_WIN32_WINNT=${WDK_WINVER}"
+        )
+    set_target_properties(${target} PROPERTIES LINK_FLAGS "${WDK_LINK_FLAGS}")
+    if(WDK_NTDDI_VERSION)
+        target_compile_definitions(${target} PRIVATE NTDDI_VERSION=${WDK_NTDDI_VERSION})
+    endif()
+
+    target_include_directories(${target} SYSTEM PRIVATE
+        "${WDK_ROOT}/Include/${WDK_VERSION}/shared"
+        "${WDK_ROOT}/Include/${WDK_VERSION}/km"
+        "${WDK_ROOT}/Include/${WDK_VERSION}/km/crt"
+        )
+
+    target_link_libraries(${target} ntoskrnl hal bufferoverflowk wmilib)
+
+    if(DEFINED WDK_KMDF)
+        target_include_directories(${target} SYSTEM PRIVATE "${WDK_ROOT}/Include/wdf/kmdf/${WDK_KMDF}")
+        target_link_libraries(${target}
+            "${WDK_ROOT}/Lib/wdf/kmdf/${WDK_PLATFORM}/${WDK_KMDF}/WdfDriverEntry.lib"
+            "${WDK_ROOT}/Lib/wdf/kmdf/${WDK_PLATFORM}/${WDK_KMDF}/WdfLdr.lib"
+            )
+
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set_property(TARGET ${_target} APPEND_STRING PROPERTY LINK_FLAGS "/ENTRY:FxDriverEntry@8")
+        elseif(CMAKE_SIZEOF_VOID_P  EQUAL 8)
+            set_property(TARGET ${_target} APPEND_STRING PROPERTY LINK_FLAGS "/ENTRY:FxDriverEntry")
         endif()
     else()
-        message(FATAL_ERROR "xbd_add_kernel_driver() only supports Windows platform")
+        if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+            set_property(TARGET ${_target} APPEND_STRING PROPERTY LINK_FLAGS "/ENTRY:GsDriverEntry@8")
+        elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
+            set_property(TARGET ${_target} APPEND_STRING PROPERTY LINK_FLAGS "/ENTRY:GsDriverEntry")
+        endif()
+    endif()
+
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/include")
+        target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/include)
+    endif()
+	# By default, put 'src' in Include list
+	target_include_directories(${target} PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
+	# Add Sources.cmake to target if it exists.
+    if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
+        target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
     endif()
 endfunction()

@@ -8,12 +8,15 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD YES CACHE BOOL "Prevents accidental cmake -B. 
 set(CMAKE_MESSAGE_CONTEXT_SHOW YES)
 set(CMAKE_MESSAGE_CONTEXT xbuild)
 
+set(XBUILD_PRELUDE_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake" CACHE PATH "XBuild CMake Prelude directory")
+set(XBUILD_PRELUDE_PACKAGES_DIR "${XBUILD_PRELUDE_CMAKE_DIR}/packages" CACHE PATH "XBuild CMake Prelude find_package directory")
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/packages")
 list(APPEND CMAKE_MESSAGE_CONTEXT prelude)
 
 include(xbuild-prelude)
 
-set(XBUILD_PRELUDE_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake" CACHE PATH "XBuild CMake Prelude directory")
 
 if (DEFINED ENV{XBUILD_FETCHCONTENT_BASE_DIR})
     # We use FORCE because the FetchContent for prelude sets FETCHCONTENT_BASE_DIR, which we want to override for all further fetched content
