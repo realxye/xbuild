@@ -8,6 +8,7 @@ message(STATUS "Target Platform: Linux")
 
 # set options
 set(XBD_PLATFORM_NAME "Linux")
+set(XBD_PLATFORM_LINUX ON)
 set(XBD_PLATFORM_DESKTOP ON)
 
 add_compile_definitions(XBD_PLATFORM_LINUX)

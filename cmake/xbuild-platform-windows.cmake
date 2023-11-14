@@ -9,6 +9,7 @@ message(STATUS "Target Platform: Windows")
 # set variables
 #   - XBuild Variables
 set(XBD_PLATFORM_NAME "Windows")
+set(XBD_PLATFORM_WINDOWS ON)
 set(XBD_PLATFORM_DESKTOP ON)
 #   - CMake Variables
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)

@@ -8,6 +8,7 @@ message(STATUS "Target Platform: MacOS")
 
 # set options
 set(XBD_PLATFORM_NAME "MacOS")
+set(XBD_PLATFORM_MACOS ON)
 set(XBD_PLATFORM_DESKTOP ON)
 
 add_compile_definitions(XBD_PLATFORM_MACOS)

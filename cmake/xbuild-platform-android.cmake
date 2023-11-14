@@ -5,6 +5,7 @@ message(STATUS "Target Platform: Android")
 
 # set options
 set(XBD_PLATFORM_NAME "Android")
+set(XBD_PLATFORM_ANDROID ON)
 set(XBD_PLATFORM_MOBILE ON)
 
 add_compile_definitions(XBD_PLATFORM_ANDROID)

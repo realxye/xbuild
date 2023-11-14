@@ -8,6 +8,7 @@ message(STATUS "Target Platform: iOS")
 
 # set options
 set(XBD_PLATFORM_NAME "iOS")
+set(XBD_PLATFORM_IOS ON)
 set(XBD_PLATFORM_MOBILE ON)
 
 add_compile_definitions(XBD_PLATFORM_IOS)
