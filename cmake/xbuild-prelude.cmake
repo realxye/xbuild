@@ -11,5 +11,4 @@ include(xbuild-internal-options)
 include(xbuild-util-log)
 include(xbuild-util-core)
 include(xbuild-util-find)
-include(xbuild-util-cmake)
 

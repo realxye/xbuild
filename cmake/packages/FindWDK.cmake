@@ -14,6 +14,11 @@ include_guard(GLOBAL)
 # - `WDK_NTDDI_VERSION` -- the NTDDI_VERSION used for kernel drivers and libraries,
 #                          if not set, the value will be automatically calculated by WINVER
 #        (default value is left blank and can be changed per target or globally)
+# - `WDK_COMPILE_FLAGS` -- WDK compile flag
+# - `WDK_COMPILE_DEFINITIONS` -- WDK compile definitions
+# - `WDK_COMPILE_DEFINITIONS_DEBUG` -- WDK compile definitions (Debug)
+# - `WDK_LINK_FLAGS` -- WDK link flags
+# - `WDK_PLATFORM` -- WDK platform
 #
 # Example usage:
 #
@@ -57,9 +62,6 @@ message(STATUS "WDK: Found")
 message(STATUS "   - Root:    " ${WDK_ROOT})
 message(STATUS "   - Version: " ${WDK_VERSION})
 
-set(WDK_WINVER "0x0601" CACHE STRING "Default WINVER for WDK targets")
-set(WDK_NTDDI_VERSION "" CACHE STRING "Specified NTDDI_VERSION for WDK targets if needed")
-
 set(WDK_ADDITIONAL_FLAGS_FILE "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/wdkflags.h")
 file(WRITE ${WDK_ADDITIONAL_FLAGS_FILE} "#pragma runtime_checks(\"suc\", off)")
 
@@ -98,3 +100,15 @@ string(CONCAT WDK_LINK_FLAGS
     "/SECTION:INIT,d " #
     "/VERSION:10.0 " #
     )
+
+# Export
+set(WDK_ROOT "${WDK_ROOT}" CACHE STRING "WDK dir")
+set(WDK_VERSION "${WDK_VERSION}" CACHE STRING "WDK version")
+set(WDK_WINVER "0x0601" CACHE STRING "Default WINVER for WDK targets")
+set(WDK_NTDDI_VERSION "" CACHE STRING "Specified NTDDI_VERSION for WDK targets if needed")
+set(WDK_COMPILE_FLAGS "${WDK_COMPILE_FLAGS}" CACHE STRING "WDK compile flag")
+set(WDK_COMPILE_DEFINITIONS "${WDK_COMPILE_DEFINITIONS}" CACHE STRING "WDK compile definitions")
+set(WDK_COMPILE_DEFINITIONS_DEBUG "${WDK_COMPILE_DEFINITIONS_DEBUG}" CACHE STRING "WDK compile definitions (Debug)")
+set(WDK_LINK_FLAGS "${WDK_LINK_FLAGS}" CACHE STRING "WDK link flags")
+set(WDK_PLATFORM "${WDK_PLATFORM}" CACHE STRING "WDK platform")
+
