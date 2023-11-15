@@ -213,6 +213,8 @@ function (xbd_add_kernel_library target)
     add_library(${target} STATIC)
 
     # Set compile options
+    set_target_properties(${target} PROPERTIES VS_CONFIGURATION_TYPE "Driver")
+    set_target_properties(${target} PROPERTIES VS_PLATFORM_TOOLSET "WindowsKernelModeDriver10.0")
     set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${WDK_COMPILE_FLAGS}")
     set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS
         "${WDK_COMPILE_DEFINITIONS};$<$<CONFIG:Debug>:${WDK_COMPILE_DEFINITIONS_DEBUG};>_WIN32_WINNT=${WDK_WINVER}"
@@ -263,6 +265,8 @@ function (xbd_add_kernel_driver target)
     add_executable(${target} ${WDK_UNPARSED_ARGUMENTS})
 
     set_target_properties(${target} PROPERTIES FOLDER drivers)
+    set_target_properties(${target} PROPERTIES VS_CONFIGURATION_TYPE "Driver")
+    set_target_properties(${target} PROPERTIES VS_PLATFORM_TOOLSET "WindowsKernelModeDriver10.0")
     set_target_properties(${target} PROPERTIES SUFFIX ".sys")
     set_target_properties(${target} PROPERTIES COMPILE_OPTIONS "${WDK_COMPILE_FLAGS}")
     set_target_properties(${target} PROPERTIES COMPILE_DEFINITIONS
