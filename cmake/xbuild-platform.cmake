@@ -1,3 +1,5 @@
+include_guard(GLOBAL)
+
 #[[
 XBuild support 5 target platforms:
     - Windows (x86, x64, arm64)

@@ -54,13 +54,29 @@ endif()
 # - "C:/Program Files*/Windows Kits/10/Include/10.0.22621.0/km/ntddk.h"
 get_filename_component(WDK_ROOT ${WDK_LATEST_NTDDK_FILE} DIRECTORY) # "C:/Program Files*/Windows Kits/10/Include/10.0.22621.0/km"
 get_filename_component(WDK_ROOT ${WDK_ROOT} DIRECTORY)              # "C:/Program Files*/Windows Kits/10/Include/10.0.22621.0"
-get_filename_component(WDK_VERSION ${WDK_ROOT} NAME)                # "10.0.22621.0"
+get_filename_component(WDK_LATEST_VERSION ${WDK_ROOT} NAME)                # "10.0.22621.0"
 get_filename_component(WDK_ROOT ${WDK_ROOT} DIRECTORY)              # "C:/Program Files*/Windows Kits/10/Include"
 get_filename_component(WDK_ROOT ${WDK_ROOT} DIRECTORY)              # "C:/Program Files*/Windows Kits/10"
 
+# Get all available versions
+foreach(NTDDK_FILE ${WDK_NTDDK_FILES})
+    get_filename_component(NTDDK_FILE "${NTDDK_FILE}" DIRECTORY)  # "C:/Program Files*/Windows Kits/10/Include/10.0.22621.0/km"
+    get_filename_component(NTDDK_FILE "${NTDDK_FILE}" DIRECTORY)  # "C:/Program Files*/Windows Kits/10/Include/10.0.22621.0"
+    get_filename_component(NTDDK_VERSION "${NTDDK_FILE}" NAME)    # "10.0.22621.0"
+    list(APPEND WDK_ALL_VERSIONS "${NTDDK_VERSION}")
+endforeach()
+
+# Export WDK Information
+set(WDK_FOUND ON CACHE BOOL "WDK is found" FORCE)
+set(WDK_ROOT "${WDK_ROOT}" CACHE STRING "WDK dir" FORCE)
+set(WDK_LATEST_VERSION "${WDK_LATEST_VERSION}" CACHE STRING "WDK latest version" FORCE)
+set(WDK_ALL_VERSIONS "${WDK_ALL_VERSIONS}" CACHE STRING "WDK available versions" FORCE)
+
+# Print success message
 message(STATUS "WDK: Found")
-message(STATUS "   - Root:    " ${WDK_ROOT})
-message(STATUS "   - Version: " ${WDK_VERSION})
+message(STATUS "   - Root: ${WDK_ROOT}")
+message(STATUS "   - Latest Version: ${WDK_LATEST_VERSION}")
+message(STATUS "   - Available Versions: " ${WDK_ALL_VERSIONS})
 
 set(WDK_ADDITIONAL_FLAGS_FILE "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/wdkflags.h")
 file(WRITE ${WDK_ADDITIONAL_FLAGS_FILE} "#pragma runtime_checks(\"suc\", off)")
@@ -102,13 +118,4 @@ string(CONCAT WDK_LINK_FLAGS
     )
 
 # Export
-set(WDK_ROOT "${WDK_ROOT}" CACHE STRING "WDK dir")
-set(WDK_VERSION "${WDK_VERSION}" CACHE STRING "WDK version")
-set(WDK_WINVER "0x0601" CACHE STRING "Default WINVER for WDK targets")
-set(WDK_NTDDI_VERSION "" CACHE STRING "Specified NTDDI_VERSION for WDK targets if needed")
-set(WDK_COMPILE_FLAGS "${WDK_COMPILE_FLAGS}" CACHE STRING "WDK compile flag")
-set(WDK_COMPILE_DEFINITIONS "${WDK_COMPILE_DEFINITIONS}" CACHE STRING "WDK compile definitions")
-set(WDK_COMPILE_DEFINITIONS_DEBUG "${WDK_COMPILE_DEFINITIONS_DEBUG}" CACHE STRING "WDK compile definitions (Debug)")
-set(WDK_LINK_FLAGS "${WDK_LINK_FLAGS}" CACHE STRING "WDK link flags")
-set(WDK_PLATFORM "${WDK_PLATFORM}" CACHE STRING "WDK platform")
 

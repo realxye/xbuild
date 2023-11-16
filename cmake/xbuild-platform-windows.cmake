@@ -1,3 +1,4 @@
+include_guard(GLOBAL)
 
 # Ensure environment has been set
 if (NOT XBD_ENV_WINDOWS)
@@ -8,9 +9,9 @@ message(STATUS "Target Platform: Windows")
 
 # set variables
 #   - XBuild Variables
-set(XBD_PLATFORM_NAME "Windows")
-set(XBD_PLATFORM_WINDOWS ON)
-set(XBD_PLATFORM_DESKTOP ON)
+set(XBD_PLATFORM_NAME "Windows" CACHE INTERNAL "Target platform name")
+set(XBD_PLATFORM_WINDOWS ON CACHE BOOL "Target platform is Windows" FORCE)
+set(XBD_PLATFORM_DESKTOP ON CACHE BOOL "Target platform is Desktop" FORCE)
 #   - CMake Variables
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 set(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS 1)

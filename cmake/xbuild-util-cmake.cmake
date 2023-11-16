@@ -110,7 +110,11 @@ function(xbd_target_sources target)
 endfunction()
 
 function(xbd_add_executable target)
+    # Enable message context
+    set(CMAKE_MESSAGE_CONTEXT "Target.${target}")
+    set(CMAKE_MESSAGE_CONTEXT "${CMAKE_MESSAGE_CONTEXT}" PARENT_SCOPE)
 
+    message(STATUS "Add executable: ${target}")
     cmake_parse_arguments(ADD_EXECUTABLE "NO_MANIFEST" "MANIFEST_FILE" "" ${ARGN})
     add_executable(${target} ${ADD_EXECUTABLE_UNPARSED_ARGUMENTS})
 
@@ -130,7 +134,7 @@ function(xbd_add_executable target)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
         target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
         include (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
-        message("  - Found (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
+        message(STATUS "Found sources (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
     endif()
 
     # By default, put 'src' in Include list
@@ -163,6 +167,11 @@ endfunction()
 #     d. The specified target will be added to "Libs" folder for IDEs such as VS or XCode
 #
 function (xbd_add_library target)
+    # Enable message context
+    set(CMAKE_MESSAGE_CONTEXT "Target.${target}")
+    set(CMAKE_MESSAGE_CONTEXT "${CMAKE_MESSAGE_CONTEXT}" PARENT_SCOPE)
+    
+    message(STATUS "Add library: ${target}")
     # Handle single argument case specially
     set(args STATIC)
     if (ARGC GREATER 1)
@@ -192,13 +201,18 @@ function (xbd_add_library target)
       if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
         target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
         include (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
-        message("  - Found (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
+        message(STATUS "Found sources (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
       endif()
     endif()
 endfunction()
 
 # This function add a Widnows kernel Mode library
 function (xbd_add_kernel_library target)
+    # Enable message context
+    set(CMAKE_MESSAGE_CONTEXT "Target.${target}")
+    set(CMAKE_MESSAGE_CONTEXT "${CMAKE_MESSAGE_CONTEXT}" PARENT_SCOPE)
+    
+    message(STATUS "Add Windows Kernel Library: ${target}")
     # Windows Only
     if (NOT WIN32)
         message(FATAL_ERROR "xbd_add_kernel_library() only supports Windows platform")
@@ -206,7 +220,10 @@ function (xbd_add_kernel_library target)
     endif()
 
     # Ensure WDK is installed
-    find_package(WDK REQUIRED)
+    if (NOT WDK_FOUND)
+        message(FATAL_ERROR "WDK is not installed")
+        return()
+    endif()
 
     # Add target
     cmake_parse_arguments(WDK "" "KMDF;WINVER;NTDDI_VERSION" "" ${ARGN})
@@ -245,12 +262,17 @@ function (xbd_add_kernel_library target)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
         target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
         include (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
-        message("  - Found (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
+        message(STATUS "Found sources (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
     endif()
 endfunction()
 
 # This function add a Widnows kernel Mode driver
 function (xbd_add_kernel_driver target)
+    # Enable message context
+    set(CMAKE_MESSAGE_CONTEXT "Target.${target}")
+    set(CMAKE_MESSAGE_CONTEXT "${CMAKE_MESSAGE_CONTEXT}" PARENT_SCOPE)
+
+    message(STATUS "Add Windows Kernel Driver: ${target}")
     # Windows Only
     if (NOT WIN32)
         message(FATAL_ERROR "xbd_add_kernel_driver() only supports Windows platform")
@@ -258,7 +280,10 @@ function (xbd_add_kernel_driver target)
     endif()
 
     # Ensure WDK is installed
-    find_package(WDK REQUIRED)
+    if (NOT WDK_FOUND)
+        message(FATAL_ERROR "WDK is not installed")
+        return()
+    endif()
 
     # Add target
     cmake_parse_arguments(WDK "" "KMDF;WINVER;NTDDI_VERSION" "" ${ARGN})
@@ -315,6 +340,6 @@ function (xbd_add_kernel_driver target)
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")
         target_sources(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
         include (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)
-        message("  - Found (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
+        message(STATUS "Found sources (${CMAKE_CURRENT_LIST_DIR}/Sources.cmake)")
     endif()
 endfunction()
