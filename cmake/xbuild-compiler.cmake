@@ -1,15 +1,5 @@
 include_guard(GLOBAL)
 
-# Enable Language
-enable_language(C)
-enable_language(CXX)
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  enable_language(ASM_MASM)
-elseif ((CMAKE_SYSTEM_NAME STREQUAL "iOS") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
-  enable_language(OBJC)
-  enable_language(OBJCXX)
-endif()
-
 # set project configuration
 include(xbuild-compiler-config)
 
@@ -29,10 +19,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # select compiler profile
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang$")
-    include(xbuild-compiler-llvm)
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+if(XBD_PLATFORM_WINDOWS)
     include(xbuild-compiler-msvc)
 else()
-    message(FATAL_ERROR "Compiler (${CMAKE_CXX_COMPILER_ID}) is unsupported")
+    include(xbuild-compiler-llvm)
 endif()

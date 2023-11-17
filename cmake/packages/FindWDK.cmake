@@ -78,44 +78,56 @@ message(STATUS "   - Root: ${WDK_ROOT}")
 message(STATUS "   - Latest Version: ${WDK_LATEST_VERSION}")
 message(STATUS "   - Available Versions: " ${WDK_ALL_VERSIONS})
 
-set(WDK_ADDITIONAL_FLAGS_FILE "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/wdkflags.h")
-file(WRITE ${WDK_ADDITIONAL_FLAGS_FILE} "#pragma runtime_checks(\"suc\", off)")
+# Since this file won't be changed per-target, we can generate it once in toplevel CMake dir
+set(WDK_ADDITIONAL_OPTIONS_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/wdkflags.h")
+file(WRITE ${WDK_ADDITIONAL_OPTIONS_FILE} "#pragma runtime_checks(\"suc\", off)")
 
-set(WDK_COMPILE_FLAGS
+set(WDK_DEFAULT_COMPILE_OPTIONS
     "/Zp8" # set struct alignment
     "/GF"  # enable string pooling
     "/GR-" # disable RTTI
     "/Gz"  # __stdcall by default
     "/kernel"  # create kernel mode binary
+    "/std:c++17" # Always support C++ 17
+    "/std:c11" # Always support C11
+    "/wd5045" # Disable: Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
     "/FIwarning.h" # disable warnings in WDK headers
-    "/FI${WDK_ADDITIONAL_FLAGS_FILE}" # include file to disable RTC
+    "/FI${WDK_ADDITIONAL_OPTIONS_FILE}" # include file to disable RTC
     )
 
-set(WDK_COMPILE_DEFINITIONS "WINNT=1")
-set(WDK_COMPILE_DEFINITIONS_DEBUG "MSC_NOOPT;DEPRECATE_DDK_FUNCTIONS=1;DBG=1")
+set(WDK_DEFAULT_COMPILE_DEFINITIONS "WINNT=1")
+set(WDK_DEFAULT_COMPILE_DEFINITIONS_DEBUG "MSC_NOOPT;DEPRECATE_DDK_FUNCTIONS=1;DBG=1")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-    list(APPEND WDK_COMPILE_DEFINITIONS "_X86_=1;i386=1;STD_CALL")
-    set(WDK_PLATFORM "x86")
+    list(APPEND WDK_DEFAULT_COMPILE_DEFINITIONS "_X86_=1;i386=1;STD_CALL")
+    set(WDK_PLATFORM "X86")
 elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    list(APPEND WDK_COMPILE_DEFINITIONS "_WIN64;_AMD64_;AMD64")
-    set(WDK_PLATFORM "x64")
+    list(APPEND WDK_DEFAULT_COMPILE_DEFINITIONS "_WIN64;_AMD64_;AMD64")
+    set(WDK_PLATFORM "X64")
 else()
     message(FATAL_ERROR "Unsupported architecture")
 endif()
 
-string(CONCAT WDK_LINK_FLAGS
+string(CONCAT WDK_DEFAULT_LINK_FLAGS
     "/MANIFEST:NO " #
     "/DRIVER " #
     "/OPT:REF " #
     "/INCREMENTAL:NO " #
     "/OPT:ICF " #
     "/SUBSYSTEM:NATIVE " #
+    "/MACHINE:${WDK_PLATFORM} " # Target machine
     "/MERGE:_TEXT=.text;_PAGE=PAGE " #
     "/NODEFAULTLIB " # do not link default CRT
     "/SECTION:INIT,d " #
     "/VERSION:10.0 " #
+    "/Qspectre- " #
     )
 
-# Export
-
+# Export compile/link options and flags
+set(WDK_DEFAULT_COMPILE_OPTIONS "${WDK_DEFAULT_COMPILE_OPTIONS}" CACHE INTERNAL "WDK default compile options")
+set(WDK_DEFAULT_COMPILE_DEFINITIONS "${WDK_DEFAULT_COMPILE_DEFINITIONS}" CACHE INTERNAL "WDK default compile definitions")
+set(WDK_DEFAULT_COMPILE_DEFINITIONS_DEBUG "${WDK_DEFAULT_COMPILE_DEFINITIONS_DEBUG}" CACHE INTERNAL "WDK default compile definitions (debug)")
+set(WDK_DEFAULT_LINK_FLAGS "${WDK_DEFAULT_LINK_FLAGS}" CACHE INTERNAL "WDK default link flags")
+set(WDK_DEFAULT_WINVER "${WDK_PLATFORM}" CACHE INTERNAL "WDK platform")
+set(WDK_DEFAULT_LIBRARIES "ntoskrnl.lib;hal.lib;BufferOverflowK.lib;wmilib.lib" CACHE INTERNAL "WDK default libraries")
+set(WDK_PLATFORM "${WDK_PLATFORM}" CACHE INTERNAL "WDK platform")

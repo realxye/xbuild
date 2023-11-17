@@ -13,5 +13,5 @@ function (xbd_project)
     # Include build related scripts
     include(xbuild-platform)
     include(xbuild-compiler)
-    include(xbuild-util-cmake)
+    include(xbuild-target)
 endfunction()
