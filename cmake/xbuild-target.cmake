@@ -168,6 +168,11 @@ function (xbd_add_kernel_library target)
     endif()
     set(WDK_VERSION "${WDK_VERSION}" PARENT_SCOPE)
 
+    # Copy Driver.Directory.Build.props to override Visual Studio settings
+    message(STATUS "Copying \"Driver.Directory.Build.props\" to \"${CMAKE_CURRENT_BINARY_DIR}/Directory.Build.props\"")
+    configure_file("${XBD_CMAKE_TEMPLATES_DIR}/Driver.Directory.Build.props"
+        "${CMAKE_CURRENT_BINARY_DIR}/Directory.Build.props" COPYONLY)
+
     # Set compile options and definitions
     set_target_properties(${target} PROPERTIES EXCLUDE_FROM_ALL TRUE
         FOLDER libs
@@ -256,6 +261,11 @@ function (xbd_add_kernel_driver target)
         LINK_FLAGS "${WDK_DEFAULT_LINK_FLAGS}"
     )
 
+    # Copy Driver.Directory.Build.props to override Visual Studio settings
+    message(STATUS "Copying \"Driver.Directory.Build.props\" to \"${CMAKE_CURRENT_BINARY_DIR}/Directory.Build.props\"")
+    configure_file("${XBD_CMAKE_TEMPLATES_DIR}/Driver.Directory.Build.props"
+        "${CMAKE_CURRENT_BINARY_DIR}/Directory.Build.props" COPYONLY)
+
     # Set directories
     #   - Include: current dirs
     target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src)
@@ -275,11 +285,6 @@ function (xbd_add_kernel_driver target)
 
     # Add default libraries
     set_property(TARGET ${target} PROPERTY LINK_LIBRARIES ${WDK_DEFAULT_LIBRARIES})
-    
-    #check_cxx_compiler_flag(-Qspectre HAS_QSPECTRE)
-    #if (HAS_QSPECTRE)
-    #    message(STATUS "/Qspectre is detected in driver target")
-    #endif()
 
     if(DEFINED WDK_KMDF)
         target_include_directories(${target} SYSTEM PRIVATE "${WDK_ROOT}/Include/wdf/kmdf/${WDK_KMDF}")
@@ -299,20 +304,6 @@ function (xbd_add_kernel_driver target)
             set_property(TARGET ${target} APPEND_STRING PROPERTY LINK_FLAGS "/ENTRY:GsDriverEntry")
         endif()
     endif()
-    
-    # Disable QSPECTRE
-    #get_property(CompileOptions TARGET ${target} PROPERTY COMPILE_OPTIONS)
-    #message(STATUS "CompileOptions: ${CompileOptions}")
-    #get_property(CMakeCFlags TARGET ${target} PROPERTY CMAKE_C_FLAGS)
-    #message(STATUS "CMakeCFlags: ${CMakeCFlags}")
-    #get_property(CMakeCxxFlags TARGET ${target} PROPERTY CMAKE_CXX_FLAGS)
-    #message(STATUS "CMakeCxxFlags: ${CMakeCxxFlags}")
-    #get_property(CMakeCInitLibs TARGET ${target} PROPERTY CMAKE_C_STANDARD_LIBRARIES_INIT)
-    #message(STATUS "CMakeCInitLibs: ${CMakeCInitLibs}")
-    #get_property(CMakeCxxInitLibs TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_LIBRARIES_INIT)
-    #message(STATUS "CMakeCxxInitLibs: ${CMakeCxxInitLibs}")
-    #get_property(CMakeStaticLinkFlags TARGET ${target} PROPERTY LINK_FLAGS)
-    #message(STATUS "CMakeStaticLinkFlags: ${CMakeStaticLinkFlags}")
 
 	# Add Sources.cmake to target if it exists.
     if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/Sources.cmake")

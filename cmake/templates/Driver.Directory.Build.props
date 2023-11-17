@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup Label="Configuration">
+    <TargetVersion>Windows10</TargetVersion>
+    <SpectreMitigation>false</SpectreMitigation>
+    <Driver_SpectreMitigation>false</Driver_SpectreMitigation>
+    <DriverTargetPlatform>Windows Driver</DriverTargetPlatform>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ControlFlowGuard>false</ControlFlowGuard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>
