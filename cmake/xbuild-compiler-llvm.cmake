@@ -4,6 +4,10 @@
 # it should not do anything based off of spec, build configuration, host or
 # target platform.
 
+if(XBD_ENV_WINDOWS)
+    message(FATAL_ERROR "xcbuild-compiler-llvm.cmake cannot be used in Windows environment")
+endif()
+
 if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang$")
     message(FATAL_ERROR "xcbuild-compiler-llvm.cmake is for Clang only")
 endif()
@@ -14,14 +18,11 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
     SET(XBD_CL_APPLE_CLANG ON)
     message(STATUS "Compiler: Apple Clang")
 elseif("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "MSVC")
-    SET(XBD_CL_MSVC_CLANG ON)
-    message(STATUS "Compiler: MSVC Clang")
-else()
-    message(FATAL_ERROR "Compiler (${CMAKE_CXX_COMPILER_ID}) is unsupported")
+    message(FATAL_ERROR "Compiler (${CMAKE_CXX_COMPILER_ID}) is not supported in current environment (${XBD_ENV_NAME})")
 endif()
 
-# Set compiler common options
-include(xbuild-compiler-common-options)
+# - All enumerators in a switch must be handled by an explicit or default case
+add_compile_options(-Wno-switch)
 
 # Set clang common options
 if(XBD_OPT_BUILD_TIMING)

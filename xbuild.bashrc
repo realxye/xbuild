@@ -336,7 +336,7 @@ xbuild-cmake()
         if [ "$MP_VERBOSE" == "debug" ]; then
             echo "cmake -G \"$CMAKE_GENERATOR\" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . $CMAKE_DEFS | tee $LOGFILE"
         fi
-        cmake -G "$CMAKE_GENERATOR" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . $CMAKE_DEFS | tee $LOGFILE
+        cmake -G "$CMAKE_GENERATOR" $CMAKE_TOOLSET $CMAKE_ARCH -B $CMAKE_OUTDIR -S . -Wno-dev $CMAKE_DEFS | tee $LOGFILE
     elif [ "$MP_VERB" == "build" ]; then
         # if verb is build, the cmake must be configured already
         if [ ! -f $CMAKE_OUTDIR/CMakeCache.txt ]; then
@@ -352,7 +352,7 @@ xbuild-cmake()
         if [ "$MP_VERBOSE" == "debug" ]; then
             echo "cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE"
         fi
-        cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE
+        cmake --build $CMAKE_OUTDIR --config $MP_CONFIG -Wno-dev $CMAKE_DEFS | tee $LOGFILE
     else
         xbuild-print "ERROR: Unknown verb ($MP_VERB)" red b
         return
