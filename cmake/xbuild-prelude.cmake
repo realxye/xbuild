@@ -15,13 +15,6 @@ list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/packages")
 list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
 list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
 
-set_property(TARGET ${target} PROPERTY CMAKE_C_STANDARD_LIBRARIES_INIT "")
-set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
-#set_property(TARGET ${target} PROPERTY CMAKE_C_IMPLICIT_LINK_LIBRARIES "")
-#set_property(TARGET ${target} PROPERTY CMAKE_CXX_IMPLICIT_LINK_LIBRARIES "")
-#set_property(TARGET ${target} PROPERTY CMAKE_C_STANDARD_LIBRARIES "")
-#set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_LIBRARIES "")
-
 # Enable Language
 enable_language(C)
 enable_language(CXX)
@@ -54,6 +47,13 @@ if (XBUILD_CMAKE_IS_CHILD)
     endif()
     # Disables unnecessary compiler copyright information for RC files on Windows
     set(CMAKE_RC_FLAGS_INIT "-nologo" PARENT_SCOPE)
+    # Remove all default C/C++ libraries, we will add them if it is needed
+    # - For Windows UserMode modules, Visual STuio use "%(AdditionalDependencies)" by default
+    # - For Windows KernelMode modules, CMake default C/C++ libraries are NOT allowed
+    set(CMAKE_C_STANDARD_LIBRARIES_INIT "" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "" PARENT_SCOPE)
+    set(CMAKE_C_STANDARD_LIBRARIES "" PARENT_SCOPE)
+    set(CMAKE_CXX_STANDARD_LIBRARIES "" PARENT_SCOPE)
 else()
     message(STATUS "xbuild-cmake is not child (included directly)")
     set(CMAKE_EXPORT_COMPILE_COMMANDS YES)
@@ -75,6 +75,13 @@ else()
     endif()
     # Disables unnecessary compiler copyright information for RC files on Windows
     set(CMAKE_RC_FLAGS_INIT "-nologo")
+    # Remove all default C/C++ libraries, we will add them if it is needed
+    # - For Windows UserMode modules, Visual STuio use "%(AdditionalDependencies)" by default
+    # - For Windows KernelMode modules, CMake default C/C++ libraries are NOT allowed
+    set(CMAKE_C_STANDARD_LIBRARIES_INIT "")
+    set(CMAKE_CXX_STANDARD_LIBRARIES_INIT "")
+    set(CMAKE_C_STANDARD_LIBRARIES "")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "")
 endif()
 
 # Include utilities
