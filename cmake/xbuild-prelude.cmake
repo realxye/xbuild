@@ -11,15 +11,18 @@ list(APPEND CMAKE_MESSAGE_CONTEXT prelude)
 
 # Add xbuild-cmake dir to CMAKE_MODULE_PATH
 message(STATUS "Add xbuild-cmake dir to CMAKE_MODULE_PATH (${CMAKE_CURRENT_LIST_DIR})")
-list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/packages")
-list(PREPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+set(XBD_CMAKE_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE INTERNAL "XBuild cmake root directory")
+set(XBD_CMAKE_PACKAGES_DIR "${XBD_CMAKE_ROOT_DIR}/packages" CACHE INTERNAL "XBuild cmake packages directory")
+set(XBD_CMAKE_TEMPLATES_DIR "${XBD_CMAKE_ROOT_DIR}/templates" CACHE INTERNAL "XBuild cmake templates directory")
+list(PREPEND CMAKE_MODULE_PATH "${XBD_CMAKE_PACKAGES_DIR}")
+list(PREPEND CMAKE_MODULE_PATH "${XBD_CMAKE_ROOT_DIR}")
 list(REMOVE_DUPLICATES CMAKE_MODULE_PATH)
 
 # Enable Language
 enable_language(C)
 enable_language(CXX)
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  enable_language(ASM_MASM)
+  #enable_language(ASM_MASM)
 elseif ((CMAKE_SYSTEM_NAME STREQUAL "iOS") OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
   enable_language(OBJC)
   enable_language(OBJCXX)
