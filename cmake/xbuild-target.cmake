@@ -29,9 +29,15 @@ function(xbd_add_executable target)
         string(REPLACE "/SUBSYSTEM:WINDOWS" "/SUBSYSTEM:CONSOLE" EXECUTABLE_LINK_FLAGS "${EXECUTABLE_LINK_FLAGS}")
     endif()
 
+    if(${target} MATCHES ".*[_-]test")
+        set(FolderName "tests")
+    else()
+        set(FolderName "apps")
+    endif()
+
     # Set compile options and definitions
     set_target_properties(${target} PROPERTIES
-        FOLDER app
+        FOLDER ${FolderName}
         COMPILE_OPTIONS "${XBD_DEFAULT_COMPILE_OPTIONS}"
         COMPILE_DEFINITIONS "${XBD_DEFAULT_COMPILE_DEFINITIONS};_WIN32_WINNT=${TARGET_WINVER};NTDDI_VERSION=${TARGET_WINVER}0000"
         LINK_FLAGS "${EXECUTABLE_LINK_FLAGS}"
@@ -87,10 +93,16 @@ function (xbd_add_library target)
     endif()
     add_library(${target} ${args})
 
+    if(${target} MATCHES ".*[_-]test")
+        set(FolderName "tests")
+    else()
+        set(FolderName "libs")
+    endif()
+
     set_target_properties(${target}
         PROPERTIES
         EXCLUDE_FROM_ALL TRUE
-        FOLDER libs
+        FOLDER ${FolderName}
         COMPILE_OPTIONS "${XBD_DEFAULT_COMPILE_OPTIONS}"
         COMPILE_DEFINITIONS "${XBD_DEFAULT_COMPILE_DEFINITIONS};_WIN32_WINNT=${TARGET_WINVER};NTDDI_VERSION=${TARGET_WINVER}0000"
         LINK_FLAGS "${XBD_DEFAULT_LINK_FLAGS}"
