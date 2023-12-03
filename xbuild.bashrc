@@ -350,9 +350,9 @@ xbuild-cmake()
         fi
         # exec cmake build
         if [ "$MP_VERBOSE" == "debug" ]; then
-            echo "cmake --build $CMAKE_OUTDIR --config $MP_CONFIG $CMAKE_DEFS | tee $LOGFILE"
+            echo "cmake --build $CMAKE_OUTDIR --config $MP_CONFIG | tee $LOGFILE"
         fi
-        cmake --build $CMAKE_OUTDIR --config $MP_CONFIG -Wno-dev $CMAKE_DEFS | tee $LOGFILE
+        cmake --build $CMAKE_OUTDIR --config $MP_CONFIG | tee $LOGFILE
     else
         xbuild-print "ERROR: Unknown verb ($MP_VERB)" red b
         return
