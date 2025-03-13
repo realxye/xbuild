@@ -136,7 +136,7 @@ while [[ $# -gt 0 ]]; do
       [[ "$XBUILD_GENERATOR" == "" ]] || echo "Error: generator $XBUILD_GENERATOR and $2 cannot be set at the same time"
       [[ "$2" == "" ]] && echo "Error: missing project type"
       [[ "$2" == "make" || "$2" == "vs2019" || "$2" == "vs2022" || "$2" == "xcode" ]] || echo "Warning: ignore unknown generator $2"
-      [[ "$2" == "make" || "$2" == "vs2019" || "$2" == "vs2022" || "$2" == "xcode" ]] && XBUILD_PROJECTFILE=$2
+      [[ "$2" == "make" || "$2" == "vs2019" || "$2" == "vs2022" || "$2" == "xcode" ]] && XBUILD_GENERATOR=$2
       shift # past argument
       shift # past value
       ;;
