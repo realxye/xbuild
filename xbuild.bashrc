@@ -5,6 +5,9 @@
 # Set XBUILDROOT
 export XBUILDROOT=$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )
 
+# Append "XBUILDROOT/bin" to path
+export PATH=$PATH:$XBUILDROOT/bin
+
 # Execute core scripts
 source "$XBUILDROOT/scripts/xbuild-core.sh"
 

@@ -1,3 +1,4 @@
+#!/bin/bash
 # Git Command:
 #   git xbuild help
 #   git xbuild create
