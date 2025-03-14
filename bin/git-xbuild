@@ -264,7 +264,12 @@ XBUILD_CONFIG_CMD="cmake"
 if [[ "$ARG_GENERATOR" == "make" ]]; then
     # - Generator
     echo "-- Generator: Unix Makefiles"
-    echo "-- Toolset: llvm"
+    if [ "$ARG_TOOLSET" == "llvm" ]; then
+        echo "-- Toolset: llvm"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+    else
+        echo "-- Toolset: msvc"
+    fi
     XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G \"Unix Makefiles\""
     # - Architecture
     if [ "$ARG_ARCH" == "x86" ]; then
