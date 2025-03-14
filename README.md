@@ -1,6 +1,6 @@
 # X's Build System #
 
-This is a simple Make build system for Windows.
+The X's Build System is a simple and portable build system based on CMake. The goal is to have a easy way to build and manage all the projects.
 
 ## Prerequisites
 
@@ -9,10 +9,14 @@ This is a simple Make build system for Windows.
 `xbuild` only support following operating systems:
 
 - Windows 10 (64 bits) and above. (_Currently xbuild only support 64 bits Windows._)
+- Mac OS
+- Linux/Unix
 
-### Visual Studio
+### Toolchain
 
-This build system requires Visual Studio 2019 or above
+- For Windows, this build system requires Visual Studio 2019 or above
+- For Mac, Xcode is required
+- For Linux, LLVM is required
 
 ### Python
 
@@ -22,9 +26,17 @@ This build system requires Python 3.10 or above
 
 Latest version of Git is required. GitBash should be installed to execute build command and scripts.
 
+#### Git integration
+
+`xbuild` support git customized command `git xbuild`, check details [HERE](docs/xbuild-git-command.md)
+
+```
+git xbuild <command> ...
+```
+
 ### Windows Terminal (optional)
 
-Windows Terminal is optional, but it is a good console, recommended.
+Windows Terminal is optional, but it is a good console, strongly recommended.
 
 ## Installation and Initialization
 
@@ -64,20 +76,17 @@ source xbuild.bashrc
 
 ### Project
 
-A project includes project `Makefile` and one or more `modules`.
+A project includes project `Makefile` and one or more `targets`.
 
 ```
     PROJECT ROOT
     |---- Makefile
-    |---- Module1
+    |---- Target1
             |---- ...
-    |---- Module2
+    |---- Target2
             |---- ...
-    |---- Module3
+    |---- Target3
             |---- ...
-    |---- Tests
-            |---- TestModule1
-            |---- TestModule2
 ```
 
 To create a project, use following command:
@@ -99,6 +108,10 @@ Every single module must follow a specific folder structure:
     |---- Makefile
     |---- src/
     |---- [include]/
+    |---- tests/
+            |---- test1
+            |---- test2
+            |---- ...
 ```
 
 To create a module for existing project, execute following command at project root directory:

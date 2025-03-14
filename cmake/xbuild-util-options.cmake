@@ -3,10 +3,6 @@
 Options helper functions
 ]]
 
-# Functions defined in this file must be truly generic.  They must depend on no other Roblox specific helper functions
-# or variables, and they cannot include any other Roblox CMake files.  They must be useful to an arbitrary CMake project
-# that is completely unrelated to Roblox.
-
 # Exposes a CMake option / cache variable whose value is a string.
 # Optional arguments:
 #   NAME <name>         - Required. The name of the option (e.g. passing -D<name> to CMake will set this option)

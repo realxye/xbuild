@@ -1,0 +1,541 @@
+#!/bin/bash
+# Git Command:
+#   git xbuild help
+#   git xbuild create
+#   git xbuild config
+#   git xbuild build
+
+xbuildhelp()
+{
+    if [ "$1" == "" ]; then
+        echo "[xbuild help]"
+        echo "  git-xbuild supports following commands:"
+        echo "    - create"
+        echo "    - config"
+        echo "    - build"
+        echo "  Use \"git xbuild help <COMMAND>\" to show detail command help."
+    elif [ "$1" == "create" ]; then
+        echo "[xbuild help]"
+        echo "  \"create\" command is used to create xbuild target."
+        echo "  Command Format:"
+        echo "    git xbuild create <-t|--target TARGETNAME> <--target-type TYPE> [--kernel]"
+        echo "      --target: the target name"
+        echo "      --kernel: the target is in kernel mode"
+        echo "      --target-type: the target type, supports following values"
+        echo "        * console: target is a consle app"
+        echo "        * app: target is a GUI app"
+        echo "        * slib: target is a static-linked library,"
+        echo "          user mode or kernel mode (if --kernel is used, Windows Only)"
+        echo "        * dlib: target is a dynamic-linked library, user mode"
+        echo "          user mode or kernel mode (if --kernel is used, Windows Only)"
+        echo "        * test: target is a user mode test app"
+    elif [ "$1" == "config" ]; then
+        echo "[xbuild help]"
+        echo "  \"config\" command is used to config current xbuild project."
+        echo "  Command Format:"
+        echo "    git xbuild config <-g|--generator make|vs2019|vs2022|xcode> <-a|--architecture x86|x64|arm|arm64>"
+        echo "                      <-c|--configuration debug|release> [--compiler msvc|llvm] [-D*=ON|OFF]"
+        echo "      -g, --generator: decide how to generator the config. xbuild supports following 4 values:"
+        echo "        * make: generate a Unix Make style project"
+        echo "        * vs2019: generate a Visual Studio 2019 project (Windows Only)"
+        echo "        * vs2022: generate a Visual Studio 2022 project (Windows Only)"
+        echo "        * xcode: generate a Xcode project (Mac Only)"
+        echo "      --android: config cross-build for Android"
+        echo "      --ios: config cross-build for iOS"
+        echo "      -a, --architecture: defines the architecture to config. xbuild supports following 4 values: x86, x64, arm and arm64."
+        echo "      -c, --configuration: defines the configuration used by config. It is one of following two values: debug and release."
+        echo "      -t, --toolset: (optional) decides which compiler should be used. It supports following 2 values: llvm and msvc (Windows Only)."
+        echo "                  If not defined, default to llvm."
+        echo "      -D*=ON|OFF: xbuild use prefix -D to define its options status (override default status). For example,"
+        echo "                  -DXBDOPT_DEBUG_VERBOSE=ON will turn option XBDOPT_DEBUG_VERBOSE on."
+    elif [ "$1" == "build" ]; then
+        echo "[xbuild help]"
+        echo "  \"build\" command is used to build a target in current xbuild project."
+        echo "  Command Format:"
+        echo "    git xbuild build <-a|--architecture x86|x64|arm|arm64> <-c|--configuration debug|release> <-t|--target TARGETNAME>"
+        echo "      -a, --architecture: defines the architecture to config. xbuild supports following 4 values: x86, x64, arm and arm64."
+        echo "      -c, --configuration: defines the configuration used by config. It is one of following two values: debug and release."
+        echo "      -t, --target: the target name."
+    else
+        echo "[xbuild help]"
+        echo "  Unknown Command: \"$1\""
+    fi
+}
+
+# No parameters, print usage
+if [[ -z $1 ]]; then 
+    (xbuildhelp)
+    exit 1
+fi
+
+# [Valid XBuild Parameters]
+# xbuild target name
+ARG_TARGET=
+# xbuild target type, includes following values: console, app, slib, dlib, test
+ARG_TARGET_TYPE=
+# xbuild target platform, includes following values: Android, iOS, watchOS, tvOS, visionOS
+ARG_TARGET_PLATFORM=
+# xbuild target mode: user, kernel
+ARG_TARGETMODE=
+# xbuild options: input option values to override default values
+ARG_OPTIONS=()
+# xbuild architecture, valid options are: x86, x64, arm, arm64
+ARG_ARCH=
+# xbuild project generator, valid options are: make, vs2019, vs2022, xcode
+ARG_GENERATOR=
+# xbuild toolset, valid options are: llvm, msvc (Windows Only)
+ARG_TOOLSET=
+# xbuild configuration, valid options are: debug, release
+ARG_CONFIGURATION=
+# xbuild perform a fresh configuration of the build tree.
+# This removes any existing CMakeCache.txt file and associated CMakeFiles/ directory, and recreates them from scratch.
+ARG_FRESH=
+# xbuild verbose
+ARG_VERBOSE=
+
+# Read XBuild Command
+XBUILD_COMMAND=$1
+shift # move to next argument
+if [ "$XBUILD_COMMAND" == "help" ]; then
+    (xbuildhelp $1)
+    exit 0
+elif [ "$XBUILD_COMMAND" == "create" ]; then
+    echo "Command: $XBUILD_COMMAND"
+elif [ "$XBUILD_COMMAND" == "config" ]; then
+    echo "Command: $XBUILD_COMMAND"
+elif [ "$XBUILD_COMMAND" == "build" ]; then
+    echo "Command: $XBUILD_COMMAND"
+elif [ "$XBUILD_COMMAND" == "build-android" ]; then
+    echo "Command: $XBUILD_COMMAND"
+    XBUILD_COMMAND=build
+    ARG_TARGET_PLATFORM=android
+elif [ "$XBUILD_COMMAND" == "build-ios" ]; then
+    echo "Command: $XBUILD_COMMAND"
+    XBUILD_COMMAND=build
+    ARG_TARGET_PLATFORM=ios
+else
+    echo "Unknown Command: $XBUILD_COMMAND"
+    exit 1
+fi
+
+# positional arguments
+POSITIONAL_ARGS=()
+
+# Read all arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --target)
+      ARG_TARGET=$2
+      shift # past argument
+      shift # past value
+      ;;
+    --kernel)
+      [[ "$XBUILD_HOST_OSNAME" == "Windows" ]] || echo "Warning: Current OS ($XBUILD_HOST_OSNAME) doesn't support --kernel"
+      ARG_TARGETMODE=kernel
+      shift # past argument
+      ;;
+    --android)
+      [[ "$ARG_TARGET_PLATFORM" == "" ]] || echo "Warning: target platform \"$ARG_TARGET_PLATFORM\" will be overwritten by \"android\""
+      ARG_TARGET_PLATFORM=android
+      shift # past argument
+      ;;
+    --ios)
+      [[ "$ARG_TARGET_PLATFORM" == "" ]] || echo "Warning: target platform \"$ARG_TARGET_PLATFORM\" will be overwritten by \"ios\""
+      ARG_TARGET_PLATFORM=ios
+      shift # past argument
+      ;;
+    --target-type)
+      [[ "$ARG_TARGET_TYPE" == "" ]] || echo "Error: compiler $ARG_TARGET_TYPE and $2 cannot be set at the same time"
+      [[ "$2" == "" ]] && echo "Error: missing target type value"
+      [[ "$2" == "console" || "$2" == "app" || "$2" == "slib" || "$2" == "dlib" || "$2" == "test" ]] || echo "Warning: ignore unknown target type $2"
+      [[ "$2" == "console" || "$2" == "app" || "$2" == "slib" || "$2" == "dlib" || "$2" == "test" ]] && ARG_TARGET_TYPE=$2
+      shift # past argument
+      shift # past value
+      ;;
+    -c|--configuration)
+      [[ "$ARG_CONFIGURATION" == "" ]] || echo "Error: configuration $ARG_CONFIGURATION and $2 cannot be set at the same time"
+      [[ "$2" == "" ]] && echo "Error: missing configuration value"
+      [[ "$2" == "debug" || "$2" == "release" ]] || echo "Warning: ignore unknown configuration $2"
+      [[ "$2" == "debug" || "$2" == "release" ]] && ARG_CONFIGURATION=$2
+      shift # past argument
+      shift # past value
+      ;;
+    -a|--architecture)
+      [[ "$ARG_ARCH" == "" ]] || echo "Error: compiler $ARG_ARCH and $2 cannot be set at the same time"
+      [[ "$2" == "" ]] && echo "Error: missing architecture value"
+      [[ "$2" == "x86" || "$2" == "x64" || "$2" == "arm" || "$2" == "arm64" ]] || echo "Warning: ignore unknown compiler $2"
+      [[ "$2" == "x86" || "$2" == "x64" || "$2" == "arm" || "$2" == "arm64" ]] && ARG_ARCH=$2
+      shift # past argument
+      shift # past value
+      ;;
+    -g|--generator)
+      [[ "$ARG_GENERATOR" == "" ]] || echo "Error: generator $ARG_GENERATOR and $2 cannot be set at the same time"
+      [[ "$2" == "" ]] && echo "Error: missing project type"
+      [[ "$2" == "make" || "$2" == "vs2019" || "$2" == "vs2022" || "$2" == "xcode" ]] || echo "Warning: ignore unknown generator $2"
+      [[ "$2" == "make" || "$2" == "vs2019" || "$2" == "vs2022" || "$2" == "xcode" ]] && ARG_GENERATOR=$2
+      shift # past argument
+      shift # past value
+      ;;
+    -t|--toolset)
+      [[ "$ARG_TOOLSET" == "" ]] || echo "Error: toolset $ARG_TOOLSET and $2 cannot be set at the same time"
+      [[ "$2" == "" ]] && echo "Error: missing toolset value"
+      [[ "$2" == "llvm" || "$2" == "msvc" ]] || echo "Warning: ignore unknown toolset $2"
+      [[ "$2" == "llvm" || "$2" == "msvc" ]] && ARG_TOOLSET=$2
+      shift # past argument
+      shift # past value
+      ;;
+    --fresh)
+      ARG_FRESH=yes
+      shift # past argument
+      ;;
+    --verbose)
+      ARG_VERBOSE=yes
+      shift # past argument
+      ;;
+    -D*)
+      ARG_OPTIONS+=("${1:2}")
+      shift # past argument
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      POSITIONAL_ARGS+=("$1") # save positional arg
+      shift # past argument
+      ;;
+  esac
+done
+
+# ***********************************
+#   COMMAND: CREATE
+# ***********************************
+
+if [ "$XBUILD_COMMAND" == "create" ]; then
+    echo " "
+    echo ">>>> XBuild creating target ... <<<<"
+    if [ "$ARG_TARGET" == "" ]; then
+        echo "[Error] Target is not defined (use \"--target <TARGETNAME>\" to define target)"
+        exit 1
+    fi
+    if [ "$ARG_TARGET_TYPE" == "" ]; then
+        echo "[Error] Target type is not defined (use \"--target-type <console|app|slib|dlib|test>\" to define target)"
+        exit 1
+    fi
+    if [ -d "./$ARG_TARGET" ]; then
+        echo "[Error] Target \"$ARG_TARGET\" already exist"
+        exit 1
+    fi
+    if [ "$ARG_TARGET_TYPE" == "" ]; then
+        echo "[Error] Target type is not defined (use \"--target-type <console|app|slib|dlib|test>\" to define target)"
+        exit 1
+    elif [ "$ARG_TARGET_TYPE" == "console" ]; then
+        echo "Creating console application target: apps/$ARG_TARGET"
+    elif [ "$ARG_TARGET_TYPE" == "app" ]; then
+        echo "Creating gui application: apps/$ARG_TARGET"
+    elif [ "$ARG_TARGET_TYPE" == "slib" ]; then
+        if [ "$ARG_TARGETMODE" == "kernel" ]; then
+            echo "Creating kernel mode static library: libs/$ARG_TARGET"
+        else
+            echo "Creating user mode static library: libs/$ARG_TARGET"
+        fi
+    elif [ "$ARG_TARGET_TYPE" == "dlib" ]; then
+        if [ "$ARG_TARGETMODE" == "kernel" ]; then
+            echo "Creating kernel mode driver: libs/$ARG_TARGET"
+        else
+            echo "Creating user mode dynamic-load library: libs/$ARG_TARGET"
+        fi
+    elif [ "$ARG_TARGET_TYPE" == "test" ]; then
+        echo "Creating test application: tests/$ARG_TARGET"
+    fi
+    exit 0
+fi
+
+# Set default command arguments
+# - Check generator
+if [ "$ARG_GENERATOR" == "" ]; then
+    ARG_GENERATOR=make
+    echo "[Warning] Generator is not specified, default to $ARG_GENERATOR"
+fi
+# - Platform
+if [ "$ARG_TARGET_PLATFORM" == "" ]; then
+    if [ "$XBUILD_HOST_OSNAME" == "Windows" ]; then
+        ARG_TARGET_PLATFORM=win
+    elif [ "$XBUILD_HOST_OSNAME" == "Darwin" ]; then
+        ARG_TARGET_PLATFORM=mac
+    elif [ "$XBUILD_HOST_OSNAME" == "Linux" ]; then
+        ARG_TARGET_PLATFORM=linux
+    else
+        echo "[Error] Unsupported host OS \"$XBUILD_HOST_OSNAME\""
+        exit 1
+    fi
+fi
+# - Toolset
+if [ "$ARG_TOOLSET" == "" ]; then
+    ARG_TOOLSET=llvm
+    echo "[Warning] Toolset is not specified, default to $ARG_TOOLSET"
+fi
+# - Configuration
+if [ "$ARG_CONFIGURATION" == "" ]; then
+    ARG_CONFIGURATION=debug
+    echo "[Warning] Configuration is not specified, default to $ARG_CONFIGURATION"
+fi
+# - Architecture
+if [ "$ARG_ARCH" == "" ]; then
+    echo "[Error] Architecture is not specified, please add argument: \"-a|--architecture x86|x64|arm|arm64\""
+    exit 1
+fi
+# - Fresh: for command config, always set fresh
+if [ "$XBUILD_COMMAND" == "config" ]; then
+    ARG_FRESH=yes
+fi
+
+# Check command arguments
+# - Check generator
+if [[ "$XBUILD_GENERATOR" == "xcode" && "$XBUILD_HOST_OSNAME" == "Windows" ]]; then
+    echo "[Error] generator $XBUILD_GENERATOR is not supported on Windows"
+    exit 1
+elif [[ "$XBUILD_GENERATOR" == "vs2019" && "$XBUILD_HOST_OSNAME" == "Darwin" ]]; then
+    echo "[Error] generator $XBUILD_GENERATOR is not supported on Mac"
+    exit 1
+elif [[ "$XBUILD_GENERATOR" == "vs2022" && "$XBUILD_HOST_OSNAME" == "Darwin" ]]; then
+    echo "[Error] generator $XBUILD_GENERATOR is not supported on Mac"
+    exit 1
+fi
+# - Target Platform: only cross-build need to use this
+if [[ "$ARG_TARGET_PLATFORM" != "" && "$XBUILD_HOST_OSNAME" != "Darwin" ]]; then
+    echo "Error: Current OS ($XBUILD_HOST_OSNAME) doesn't support cross build for $ARG_TARGET_PLATFORM"
+fi
+
+# ***********************************
+#   COMMAND: CONFIG
+# ***********************************
+
+echo " "
+echo ">>>> XBuild configure start ... <<<<"
+echo "-- Host Platform: $XBUILD_HOST_OSNAME"
+echo "-- Target Platform: $ARG_TARGET_PLATFORM"
+
+# Build configure command:
+XBUILD_CONFIG_CMD="cmake"
+if [[ "$ARG_GENERATOR" == "make" ]]; then
+    # - Generator
+    echo "-- Generator: Unix Makefiles"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G \"Unix Makefiles\""
+    if [ "$ARG_TOOLSET" == "llvm" ]; then
+        echo "-- Toolset: llvm"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+    else
+        echo "-- Toolset: msvc"
+    fi
+    # - Architecture
+    if [ "$ARG_ARCH" == "x86" ]; then
+        echo "-- Architecture: x86"
+    elif [ "$ARG_ARCH" == "x64" ]; then
+        echo "-- Architecture: x64"
+    elif [ "$ARG_ARCH" == "arm" ]; then
+        echo "-- Architecture: arm"
+    elif [ "$ARG_ARCH" == "arm64" ]; then
+        echo "-- Architecture: arm64"
+    else
+        echo "[Error] architecture \"$ARG_ARCH\" is not supported"
+        exit 1
+    fi
+elif [[ "$ARG_GENERATOR" == "xcode" ]]; then
+    # - Generator
+    echo "-- Generator: Xcode"
+    echo "-- Toolset: llvm"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G Xcode"
+    # - Platform
+    if [[ "$ARG_TARGET_PLATFORM" == "" || "$ARG_TARGET_PLATFORM" == "mac" ]]; then
+        # - MacOS Architecture
+        if [ "$ARG_ARCH" == "x86" ]; then
+            echo "-- Architecture: x86"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=i386"
+        elif [ "$ARG_ARCH" == "x64" ]; then
+            echo "-- Architecture: x64"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=x86_64"
+        elif [ "$ARG_ARCH" == "arm64" ]; then
+            echo "-- Architecture: arm64"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=arm64"
+        else
+            echo "[Error] architecture \"$ARG_ARCH\" is not supported on Mac"
+            exit 1
+        fi
+    elif [[ "$ARG_TARGET_PLATFORM" == "android" ]]; then
+        # - Cross-build for Android
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_SYSTEM_NAME=Android"
+        # - Android NDK
+        if [[ "$XBUILD_ANDROID_NDK" == "" ]]; then
+            echo "[Error] XBUILD_ANDROID_NDK is NOT defined, cross-build config for Android failed"
+            exit 1
+        else
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_ANDROID_NDK=$XBUILD_ANDROID_NDK"
+        fi
+        # - Android Architecture
+        if [ "$ARG_ARCH" == "arm" ]; then
+            echo "-- Architecture: arm"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a"
+        elif [ "$ARG_ARCH" == "arm64" ]; then
+            echo "-- Architecture: arm64"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a"
+        else
+            echo "[Error] architecture \"$ARG_ARCH\" is not supported for Android cross-build"
+            exit 1
+        fi
+        # - Android STL type
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_ANDROID_STL_TYPE=gnustl_static"
+    elif [[ "$ARG_TARGET_PLATFORM" == "ios" ]]; then
+        # - Cross-build for iOS
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_SYSTEM_NAME=iOS"
+        # - iOS Architecture
+        if [ "$ARG_ARCH" == "x86" ]; then
+            echo "-- Architecture: x86"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=i386"
+        elif [ "$ARG_ARCH" == "x64" ]; then
+            echo "-- Architecture: x64"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=x86_64"
+        elif [ "$ARG_ARCH" == "arm" ]; then
+            echo "-- Architecture: arm"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=armv7;armv7s"
+        elif [ "$ARG_ARCH" == "arm64" ]; then
+            echo "-- Architecture: arm64"
+            XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_OSX_ARCHITECTURES=arm64"
+        else
+            echo "[Error] architecture \"$ARG_ARCH\" is not supported for iOS cross-build"
+            exit 1
+        fi
+    else
+        echo "[Error] Corss-build for target \"$ARG_ARCH\" is not supported"
+        exit 1
+    fi
+elif [[ "$ARG_GENERATOR" == "vs*" ]]; then
+    # - Generator
+    if [[ "$ARG_GENERATOR" == "vs2019" ]]; then
+        echo "-- Generator: Visual Studio 16 2019"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G \"Visual Studio 16 2019\""
+    elif [ "$ARG_GENERATOR" == "vs2022" ]; then
+        echo "-- Generator: Visual Studio 17 2022"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G \"Visual Studio 17 2022\""
+    else
+        echo "[Error] Generator \"$ARG_ARCH\" is not supported"
+        exit 1
+    fi
+    # Toolset
+    if [ "$ARG_TOOLSET" == "llvm" ]; then
+        echo "-- Toolset: llvm"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -T ClangCL"
+    else
+        echo "-- Toolset: msvc"
+    fi
+    # - Architecture
+    if [ "$ARG_ARCH" == "x86" ]; then
+        echo "-- Architecture: x86"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -A Win32"
+    elif [ "$ARG_ARCH" == "x64" ]; then
+        echo "-- Architecture: x64"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -A x64"
+    elif [ "$ARG_ARCH" == "arm" ]; then
+        echo "-- Architecture: arm"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -A ARM"
+    elif [ "$ARG_ARCH" == "arm64" ]; then
+        echo "-- Architecture: arm64"
+        XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -A ARM64"
+    else
+        echo "[Error] architecture \"$ARG_ARCH\" is not supported"
+        exit 1
+    fi
+fi
+# - Configuration
+echo "-- Configuration: $ARG_CONFIGURATION"
+if [ "$ARG_CONFIGURATION" == "release" ]; then
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_BUILD_TYPE=Release"
+elif [ "$ARG_CONFIGURATION" == "debug" ]; then
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_BUILD_TYPE=Debug"
+else
+    echo "[Error] Configuration \"$ARG_CONFIGURATION\" is not supported"
+    exit 1
+fi
+# - Output Dir
+if [[ "$ARG_TARGET_PLATFORM" == "" ]]; then
+    echo "[Error] Target platform is empty"
+    exit 1
+fi
+if [[ "$ARG_ARCH" == "" ]]; then
+    echo "[Error] Target architecture is empty"
+    exit 1
+fi
+if [[ "$ARG_CONFIGURATION" == "" ]]; then
+    echo "[Error] Target configuration is empty"
+    exit 1
+fi
+XBUILD_OUTDIR=output/build_${ARG_TARGET_PLATFORM}_${ARG_ARCH}_${ARG_CONFIGURATION}
+echo "-- OutDir: $XBUILD_OUTDIR"
+if [ ! -d $XBUILD_OUTDIR ]; then
+    mkdir -p $XBUILD_OUTDIR
+fi
+XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -B ${XBUILD_OUTDIR} -S . -Wno-dev"
+# Is fresh config
+if [ "$ARG_FRESH" == "yes" ]; then
+    echo "-- Fresh Build: yes"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} --fresh"
+else
+    echo "-- Fresh Build: no"
+fi
+# Is verbose enabled
+if [ "$ARG_FRESH" == "yes" ]; then
+    echo "-- Verbose: yes"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} --verbose"
+else
+    echo "-- Verbose: no"
+fi
+# - Definitions
+echo "-- Definitions:"
+for opt in "${ARG_OPTIONS[@]}"; do
+    echo "   * $opt"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -D$opt"
+done
+
+# ***********************************
+#   COMMAND: CONFIG
+# ***********************************
+
+if [[ "$XBUILD_COMMAND" == "config" || "$ARG_FRESH" == "yes" && "$XBUILD_COMMAND" == "build" ]]; then
+    # - Configure Log File
+    XBUILD_LOGTIME=`date "+%Y%m%d%H%M%S"`
+    XBUILD_LOGFILE=$XBUILD_OUTDIR/xbuild-config.log
+    echo "-- Configure Log: $XBUILD_LOGFILE"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD}"
+
+    echo "${XBUILD_CONFIG_CMD}"
+    eval ${XBUILD_CONFIG_CMD} | tee $XBUILD_LOGFILE
+    echo ">>>> XBuild configure finished <<<<"
+    echo " "
+fi
+
+# ***********************************
+#   COMMAND: BUILD
+# ***********************************
+
+if [ "$XBUILD_COMMAND" == "build" ]; then
+    echo ">>>> XBuild build start ... <<<<"
+    if [ "$ARG_TARGET" == "" ]; then
+        echo "[Error] Build target is not specified (use \"--target <TARGETNAME>\" to decide build target)"
+        exit 1
+    fi
+    XBUILD_BUILD_CMD="cmake --build $XBUILD_OUTDIR"
+    if [ "$ARG_FRESH" == "yes" ]; then
+        XBUILD_BUILD_CMD="${XBUILD_BUILD_CMD} --clean-first"
+    fi
+    if [ "$ARG_VERBOSE" == "yes" ]; then
+        XBUILD_BUILD_CMD="${XBUILD_BUILD_CMD} --verbose"
+    fi
+    XBUILD_BUILD_CMD="${XBUILD_BUILD_CMD} --target $ARG_TARGET"
+    echo "$XBUILD_BUILD_CMD"
+    XBUILD_LOGFILE=$XBUILD_OUTDIR/xbuild-build.log
+    eval ${XBUILD_BUILD_CMD} | tee $XBUILD_LOGFILE
+    echo ">>>> XBuild build finished <<<<"
+    echo " "
+fi
+
+exit 0

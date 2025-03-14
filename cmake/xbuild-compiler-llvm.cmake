@@ -9,7 +9,11 @@ if(XBD_ENV_WINDOWS)
 endif()
 
 if(NOT "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang$")
-    message(FATAL_ERROR "xcbuild-compiler-llvm.cmake is for Clang only")
+    if("CMAKE_CXX_COMPILER_ID" STREQUAL "GNU")
+        message(FATAL_ERROR "xcbuild-compiler-llvm.cmake is for Clang only, use command 'export CC=clang' and 'CXX=clang++' to set default compiler to Clang")
+    else()
+        message(FATAL_ERROR "xcbuild-compiler-llvm.cmake is for Clang only")
+    endif()
 endif()
 
 # Check which clag is being used
@@ -87,17 +91,12 @@ else()
     # Report libc++ version, or fail if libc++ doesn't work for some reason.
     #   - This check is informative only.
     #   - This check is disabled for Xcode, which throws error on it.
-    #   - This check is disabled for PS4/PS5 Playstation toolchains.
-    #   - CMake will error in the try_compile if the PS4PSSL/PS5PSSL language modules
-    #     are not installed in the CMake dist share/cmake-ver/Modules/ dir
-    #   - Engine keeps these files in Client/cmake/(PS4|PS5)
-    #     which fails's CMake's try_compile, but works for regular compiles
-    if(NOT("${CMAKE_GENERATOR}" STREQUAL "Xcode") AND NOT CMAKE_SYSTEM_NAME STREQUAL "ORBIS" AND NOT CMAKE_SYSTEM_NAME STREQUAL "Prospero")
+    if(NOT("${CMAKE_GENERATOR}" STREQUAL "Xcode"))
         try_compile(
             LIBCPP_COMPILE_RESULT                                   # <resultVar>
-            "${XBD_BINARY_DIR}/TryCompile"                          # <bindir>
-            "${XBD_SOURCE_DIR}/cmake/TryCompile/LibCppVersion"      # <srcdir>
-            PrintLibCppVersion                                      # <projectName>
+            "${CMAKE_BINARY_DIR}/trycompile"                        # <bindir>
+            "${XBD_CMAKE_ROOT_DIR}/trycompile/libcppversion"        # <srcdir>
+            printlibcppversion                                      # <projectName>
             OUTPUT_VARIABLE LIBCPP_COMPILE_OUTPUT
             )
         if (NOT LIBCPP_COMPILE_RESULT)
