@@ -68,23 +68,6 @@ if [[ -z $1 ]]; then
     exit 1
 fi
 
-# Read XBuild Command
-XBUILD_COMMAND=$1
-shift # move to next argument
-if [ "$XBUILD_COMMAND" == "help" ]; then
-    (xbuildhelp $1)
-    exit 0
-elif [ "$XBUILD_COMMAND" == "create" ]; then
-    echo "Command: $XBUILD_COMMAND"
-elif [ "$XBUILD_COMMAND" == "config" ]; then
-    echo "Command: $XBUILD_COMMAND"
-elif [ "$XBUILD_COMMAND" == "build" ]; then
-    echo "Command: $XBUILD_COMMAND"
-else
-    echo "Unknown Command: $XBUILD_COMMAND"
-    exit 1
-fi
-
 # [Valid XBuild Parameters]
 # xbuild target name
 ARG_TARGET=
@@ -107,6 +90,33 @@ ARG_CONFIGURATION=
 # xbuild perform a fresh configuration of the build tree.
 # This removes any existing CMakeCache.txt file and associated CMakeFiles/ directory, and recreates them from scratch.
 ARG_FRESH=
+# xbuild verbose
+ARG_VERBOSE=
+
+# Read XBuild Command
+XBUILD_COMMAND=$1
+shift # move to next argument
+if [ "$XBUILD_COMMAND" == "help" ]; then
+    (xbuildhelp $1)
+    exit 0
+elif [ "$XBUILD_COMMAND" == "create" ]; then
+    echo "Command: $XBUILD_COMMAND"
+elif [ "$XBUILD_COMMAND" == "config" ]; then
+    echo "Command: $XBUILD_COMMAND"
+elif [ "$XBUILD_COMMAND" == "build" ]; then
+    echo "Command: $XBUILD_COMMAND"
+elif [ "$XBUILD_COMMAND" == "build-android" ]; then
+    echo "Command: $XBUILD_COMMAND"
+    XBUILD_COMMAND=build
+    ARG_TARGET_PLATFORM=android
+elif [ "$XBUILD_COMMAND" == "build-ios" ]; then
+    echo "Command: $XBUILD_COMMAND"
+    XBUILD_COMMAND=build
+    ARG_TARGET_PLATFORM=ios
+else
+    echo "Unknown Command: $XBUILD_COMMAND"
+    exit 1
+fi
 
 # positional arguments
 POSITIONAL_ARGS=()
@@ -178,6 +188,10 @@ while [[ $# -gt 0 ]]; do
       ARG_FRESH=yes
       shift # past argument
       ;;
+    --verbose)
+      ARG_VERBOSE=yes
+      shift # past argument
+      ;;
     -D*)
       ARG_OPTIONS+=("${1:2}")
       shift # past argument
@@ -192,6 +206,50 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# ***********************************
+#   COMMAND: CREATE
+# ***********************************
+
+if [ "$XBUILD_COMMAND" == "create" ]; then
+    echo " "
+    echo ">>>> XBuild creating target ... <<<<"
+    if [ "$ARG_TARGET" == "" ]; then
+        echo "[Error] Target is not defined (use \"--target <TARGETNAME>\" to define target)"
+        exit 1
+    fi
+    if [ "$ARG_TARGET_TYPE" == "" ]; then
+        echo "[Error] Target type is not defined (use \"--target-type <console|app|slib|dlib|test>\" to define target)"
+        exit 1
+    fi
+    if [ -d "./$ARG_TARGET" ]; then
+        echo "[Error] Target \"$ARG_TARGET\" already exist"
+        exit 1
+    fi
+    if [ "$ARG_TARGET_TYPE" == "" ]; then
+        echo "[Error] Target type is not defined (use \"--target-type <console|app|slib|dlib|test>\" to define target)"
+        exit 1
+    elif [ "$ARG_TARGET_TYPE" == "console" ]; then
+        echo "Creating console application target: apps/$ARG_TARGET"
+    elif [ "$ARG_TARGET_TYPE" == "app" ]; then
+        echo "Creating gui application: apps/$ARG_TARGET"
+    elif [ "$ARG_TARGET_TYPE" == "slib" ]; then
+        if [ "$ARG_TARGETMODE" == "kernel" ]; then
+            echo "Creating kernel mode static library: libs/$ARG_TARGET"
+        else
+            echo "Creating user mode static library: libs/$ARG_TARGET"
+        fi
+    elif [ "$ARG_TARGET_TYPE" == "dlib" ]; then
+        if [ "$ARG_TARGETMODE" == "kernel" ]; then
+            echo "Creating kernel mode driver: libs/$ARG_TARGET"
+        else
+            echo "Creating user mode dynamic-load library: libs/$ARG_TARGET"
+        fi
+    elif [ "$ARG_TARGET_TYPE" == "test" ]; then
+        echo "Creating test application: tests/$ARG_TARGET"
+    fi
+    exit 0
+fi
 
 # Set default command arguments
 # - Check generator
@@ -249,10 +307,9 @@ if [[ "$ARG_TARGET_PLATFORM" != "" && "$XBUILD_HOST_OSNAME" != "Darwin" ]]; then
     echo "Error: Current OS ($XBUILD_HOST_OSNAME) doesn't support cross build for $ARG_TARGET_PLATFORM"
 fi
 
-
-#
-# COMMAND: CONFIG
-#
+# ***********************************
+#   COMMAND: CONFIG
+# ***********************************
 
 echo " "
 echo ">>>> XBuild configure start ... <<<<"
@@ -264,13 +321,13 @@ XBUILD_CONFIG_CMD="cmake"
 if [[ "$ARG_GENERATOR" == "make" ]]; then
     # - Generator
     echo "-- Generator: Unix Makefiles"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G \"Unix Makefiles\""
     if [ "$ARG_TOOLSET" == "llvm" ]; then
         echo "-- Toolset: llvm"
         XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
     else
         echo "-- Toolset: msvc"
     fi
-    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -G \"Unix Makefiles\""
     # - Architecture
     if [ "$ARG_ARCH" == "x86" ]; then
         echo "-- Architecture: x86"
@@ -400,6 +457,18 @@ else
     exit 1
 fi
 # - Output Dir
+if [[ "$ARG_TARGET_PLATFORM" == "" ]]; then
+    echo "[Error] Target platform is empty"
+    exit 1
+fi
+if [[ "$ARG_ARCH" == "" ]]; then
+    echo "[Error] Target architecture is empty"
+    exit 1
+fi
+if [[ "$ARG_CONFIGURATION" == "" ]]; then
+    echo "[Error] Target configuration is empty"
+    exit 1
+fi
 XBUILD_OUTDIR=output/build_${ARG_TARGET_PLATFORM}_${ARG_ARCH}_${ARG_CONFIGURATION}
 echo "-- OutDir: $XBUILD_OUTDIR"
 if [ ! -d $XBUILD_OUTDIR ]; then
@@ -413,28 +482,60 @@ if [ "$ARG_FRESH" == "yes" ]; then
 else
     echo "-- Fresh Build: no"
 fi
+# Is verbose enabled
+if [ "$ARG_FRESH" == "yes" ]; then
+    echo "-- Verbose: yes"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} --verbose"
+else
+    echo "-- Verbose: no"
+fi
 # - Definitions
 echo "-- Definitions:"
 for opt in "${ARG_OPTIONS[@]}"; do
     echo "   * $opt"
     XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} -D$opt"
 done
-# - Configure Log File
-XBUILD_LOGTIME=`date "+%Y%m%d%H%M%S"`
-XBUILD_LOGFILE=$XBUILD_OUTDIR/xbuild-config-$XBUILD_LOGTIME.log
-echo "-- Config Log: $XBUILD_LOGFILE"
-XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD}"
 
-echo "${XBUILD_CONFIG_CMD}"
-eval ${XBUILD_CONFIG_CMD} | tee $XBUILD_LOGFILE
-echo ">>>> XBuild configure finished <<<<"
-echo " "
+# ***********************************
+#   COMMAND: CONFIG
+# ***********************************
 
-#
-# COMMAND: BUILD
-#
-if [ "$XBUILD_COMMAND" == "build" ]; then
-    echo "Build target: $XBUILD_TARGET"
+if [[ "$XBUILD_COMMAND" == "config" || "$ARG_FRESH" == "yes" && "$XBUILD_COMMAND" == "build" ]]; then
+    # - Configure Log File
+    XBUILD_LOGTIME=`date "+%Y%m%d%H%M%S"`
+    XBUILD_LOGFILE=$XBUILD_OUTDIR/xbuild-config.log
+    echo "-- Configure Log: $XBUILD_LOGFILE"
+    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD}"
+
+    echo "${XBUILD_CONFIG_CMD}"
+    eval ${XBUILD_CONFIG_CMD} | tee $XBUILD_LOGFILE
+    echo ">>>> XBuild configure finished <<<<"
+    echo " "
 fi
 
-#exit 0
+# ***********************************
+#   COMMAND: BUILD
+# ***********************************
+
+if [ "$XBUILD_COMMAND" == "build" ]; then
+    echo ">>>> XBuild build start ... <<<<"
+    if [ "$ARG_TARGET" == "" ]; then
+        echo "[Error] Build target is not specified (use \"--target <TARGETNAME>\" to decide build target)"
+        exit 1
+    fi
+    XBUILD_BUILD_CMD="cmake --build $XBUILD_OUTDIR"
+    if [ "$ARG_FRESH" == "yes" ]; then
+        XBUILD_BUILD_CMD="${XBUILD_BUILD_CMD} --clean-first"
+    fi
+    if [ "$ARG_VERBOSE" == "yes" ]; then
+        XBUILD_BUILD_CMD="${XBUILD_BUILD_CMD} --verbose"
+    fi
+    XBUILD_BUILD_CMD="${XBUILD_BUILD_CMD} --target $ARG_TARGET"
+    echo "$XBUILD_BUILD_CMD"
+    XBUILD_LOGFILE=$XBUILD_OUTDIR/xbuild-build.log
+    eval ${XBUILD_BUILD_CMD} | tee $XBUILD_LOGFILE
+    echo ">>>> XBuild build finished <<<<"
+    echo " "
+fi
+
+exit 0
