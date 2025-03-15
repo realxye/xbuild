@@ -21,6 +21,7 @@ xbuildhelp()
         echo "    git xbuild create <-t|--target TARGETNAME> <--target-type TYPE> [--kernel]"
         echo "      --target: the target name"
         echo "      --kernel: the target is in kernel mode"
+        echo "      --project: initialize project in current folder"
         echo "      --target-type: the target type, supports following values"
         echo "        * console: target is a consle app"
         echo "        * app: target is a GUI app"
@@ -71,7 +72,7 @@ fi
 # [Valid XBuild Parameters]
 # xbuild target name
 ARG_TARGET=
-# xbuild target type, includes following values: project, console, app, slib, dlib, test
+# xbuild target type, includes following values: console, app, slib, dlib, test
 ARG_TARGET_TYPE=
 # xbuild target platform, includes following values: Android, iOS, watchOS, tvOS, visionOS
 ARG_TARGET_PLATFORM=
