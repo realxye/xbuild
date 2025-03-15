@@ -1,0 +1,39 @@
+cmake_minimum_required(VERSION 3.26.5)
+include(FetchContent)
+
+if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+
+    if ("$ENV{XBUILDROOT}" STREQUAL "")
+        # Fetch xbuild-cmake prelude
+        message(STATUS "Fetching xbuild from github ...")
+        FetchContent_Declare(
+            xbuild
+            GIT_REPOSITORY https://github.com/realxye/xbuild.git
+            GIT_TAG        0c0f45fa7891c6625f96a86ab46f405854e251cb
+        )
+        FetchContent_MakeAvailable(xbuild)
+    else()
+        # Use local xbuild-cmake prelude
+        message(STATUS "Use local xbuild: $ENV{XBUILDROOT}/cmake")
+        include("$ENV{XBUILDROOT}/cmake/xbuild-prelude.cmake")
+    endif()
+
+    # Create project
+    xbd_project(<PROJECTNAME> C CXX)
+
+    # Get 3rd-party repos
+    # - catch2
+    FetchContent_Declare(
+        catch2
+        GIT_REPOSITORY git@github.com:catchorg/Catch2.git
+        GIT_TAG        v3.8.0
+    )
+    FetchContent_MakeAvailable(catch2)
+    set_target_properties(Catch2 PROPERTIES FOLDER ThirdParty)
+    set_target_properties(Catch2WithMain PROPERTIES FOLDER ThirdParty)
+
+endif()
+
+add_subdirectory(apps)
+add_subdirectory(libs)
+add_subdirectory(tests)

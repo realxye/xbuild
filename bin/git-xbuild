@@ -21,6 +21,7 @@ xbuildhelp()
         echo "    git xbuild create <-t|--target TARGETNAME> <--target-type TYPE> [--kernel]"
         echo "      --target: the target name"
         echo "      --kernel: the target is in kernel mode"
+        echo "      --project: initialize project in current folder"
         echo "      --target-type: the target type, supports following values"
         echo "        * console: target is a consle app"
         echo "        * app: target is a GUI app"
@@ -144,6 +145,10 @@ while [[ $# -gt 0 ]]; do
       ARG_TARGET_PLATFORM=ios
       shift # past argument
       ;;
+    --project)
+      ARG_TARGET_TYPE=project
+      shift # past argument
+      ;;
     --target-type)
       [[ "$ARG_TARGET_TYPE" == "" ]] || echo "Error: compiler $ARG_TARGET_TYPE and $2 cannot be set at the same time"
       [[ "$2" == "" ]] && echo "Error: missing target type value"
@@ -213,6 +218,32 @@ done
 
 if [ "$XBUILD_COMMAND" == "create" ]; then
     echo " "
+    if [ "$ARG_TARGET_TYPE" == "project" ]; then
+        echo ">>>> XBuild initializing project ... <<<<"
+        if [ -f "./CMakeLists.txt" ]; then
+            echo "[Error] MakeLists.txt already exists"
+            exit 1
+        fi
+        # Copy project templates
+        cp "$XBUILDROOT/cmake/templates/Template-Project-CMakeLists.txt" ./CMakeLists.txt
+        if [ ! -f "./CMakeLists.txt" ]; then
+            echo "[Error] Fail to copy MakeLists.txt"
+            exit 1
+        fi
+        # Make sub dirs: apps, libs, tests
+        if [ ! -d apps ]; then
+            mkdir -p apps
+        fi
+        if [ ! -d libs ]; then
+            mkdir -p libs
+        fi
+        if [ ! -d tests ]; then
+            mkdir -p tests
+        fi
+        echo "Project initialized."
+        exit 0
+    fi
+
     echo ">>>> XBuild creating target ... <<<<"
     if [ "$ARG_TARGET" == "" ]; then
         echo "[Error] Target is not defined (use \"--target <TARGETNAME>\" to define target)"
@@ -222,31 +253,102 @@ if [ "$XBUILD_COMMAND" == "create" ]; then
         echo "[Error] Target type is not defined (use \"--target-type <console|app|slib|dlib|test>\" to define target)"
         exit 1
     fi
-    if [ -d "./$ARG_TARGET" ]; then
-        echo "[Error] Target \"$ARG_TARGET\" already exist"
-        exit 1
-    fi
     if [ "$ARG_TARGET_TYPE" == "" ]; then
         echo "[Error] Target type is not defined (use \"--target-type <console|app|slib|dlib|test>\" to define target)"
         exit 1
     elif [ "$ARG_TARGET_TYPE" == "console" ]; then
         echo "Creating console application target: apps/$ARG_TARGET"
+        if [ -d "apps/$ARG_TARGET" ]; then
+            echo "[Error] Target \"apps/$ARG_TARGET\" already exists)"
+            exit 1
+        fi
+        mkdir -p apps/$ARG_TARGET/src
+        mkdir -p apps/$ARG_TARGET/include/$ARG_TARGET
+        cp "$XBUILDROOT/cmake/templates/Template-Target-Console-CMakeLists.txt" "apps/$ARG_TARGET/CMakeLists.txt"
+        cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "apps/$ARG_TARGET/Sources.cmake"
+        touch apps/$ARG_TARGET/src/$ARG_TARGET.cpp
+        touch apps/$ARG_TARGET/include/$ARG_TARGET/$ARG_TARGET.h
+        echo "Target $ARG_TARGET created."
     elif [ "$ARG_TARGET_TYPE" == "app" ]; then
         echo "Creating gui application: apps/$ARG_TARGET"
+        if [ -d "apps/$ARG_TARGET" ]; then
+            echo "[Error] Target \"apps/$ARG_TARGET\" already exists)"
+            exit 1
+        fi
+        mkdir -p apps/$ARG_TARGET/src
+        mkdir -p apps/$ARG_TARGET/include/$ARG_TARGET
+        cp "$XBUILDROOT/cmake/templates/Template-Target-Win32-App-CMakeLists.txt" "apps/$ARG_TARGET/CMakeLists.txt"
+        cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "apps/$ARG_TARGET/Sources.cmake"
+        touch apps/$ARG_TARGET/src/$ARG_TARGET.cpp
+        touch apps/$ARG_TARGET/include/$ARG_TARGET/$ARG_TARGET.h
+        echo "Target $ARG_TARGET created."
     elif [ "$ARG_TARGET_TYPE" == "slib" ]; then
         if [ "$ARG_TARGETMODE" == "kernel" ]; then
             echo "Creating kernel mode static library: libs/$ARG_TARGET"
+            if [ -d "apps/$ARG_TARGET" ]; then
+                echo "[Error] Target \"libs/$ARG_TARGET\" already exists)"
+                exit 1
+            fi
+            mkdir -p libs/$ARG_TARGET/src
+            mkdir -p libs/$ARG_TARGET/include/$ARG_TARGET
+            cp "$XBUILDROOT/cmake/templates/Template-Target-KernelLib-CMakeLists.txt" "libs/$ARG_TARGET/CMakeLists.txt"
+            cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "libs/$ARG_TARGET/Sources.cmake"
+            touch libs/$ARG_TARGET/src/$ARG_TARGET.c
+            touch libs/$ARG_TARGET/include/$ARG_TARGET/$ARG_TARGET.h
+            echo "Target $ARG_TARGET created."
         else
             echo "Creating user mode static library: libs/$ARG_TARGET"
+            if [ -d "libs/$ARG_TARGET" ]; then
+                echo "[Error] Target \"libs/$ARG_TARGET\" already exists)"
+                exit 1
+            fi
+            mkdir -p libs/$ARG_TARGET/src
+            mkdir -p libs/$ARG_TARGET/include/$ARG_TARGET
+            cp "$XBUILDROOT/cmake/templates/Template-Target-StaticLib-CMakeLists.txt" "libs/$ARG_TARGET/CMakeLists.txt"
+            cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "libs/$ARG_TARGET/Sources.cmake"
+            touch libs/$ARG_TARGET/src/$ARG_TARGET.cpp
+            touch libs/$ARG_TARGET/include/$ARG_TARGET/$ARG_TARGET.h
+            echo "Target $ARG_TARGET created."
         fi
     elif [ "$ARG_TARGET_TYPE" == "dlib" ]; then
         if [ "$ARG_TARGETMODE" == "kernel" ]; then
-            echo "Creating kernel mode driver: libs/$ARG_TARGET"
+            echo "Creating kernel mode driver: drivers/$ARG_TARGET"
+            if [ -d "drivers/$ARG_TARGET" ]; then
+                echo "[Error] Target \"drivers/$ARG_TARGET\" already exists)"
+                exit 1
+            fi
+            mkdir -p drivers/$ARG_TARGET/src
+            mkdir -p drivers/$ARG_TARGET/include/$ARG_TARGET
+            cp "$XBUILDROOT/cmake/templates/Template-Target-WinDrv-CMakeLists.txt" "drivers/$ARG_TARGET/CMakeLists.txt"
+            cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "drivers/$ARG_TARGET/Sources.cmake"
+            touch drivers/$ARG_TARGET/src/$ARG_TARGET.c
+            touch drivers/$ARG_TARGET/include/$ARG_TARGET/$ARG_TARGET.h
+            echo "Target $ARG_TARGET created."
         else
             echo "Creating user mode dynamic-load library: libs/$ARG_TARGET"
+            if [ -d "libs/$ARG_TARGET" ]; then
+                echo "[Error] Target \"libs/$ARG_TARGET\" already exists)"
+                exit 1
+            fi
+            mkdir -p libs/$ARG_TARGET/src
+            mkdir -p libs/$ARG_TARGET/include/$ARG_TARGET
+            cp "$XBUILDROOT/cmake/templates/Template-Target-DynamicLib-CMakeLists.txt" "libs/$ARG_TARGET/CMakeLists.txt"
+            cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "libs/$ARG_TARGET/Sources.cmake"
+            touch libs/$ARG_TARGET/src/$ARG_TARGET.cpp
+            touch libs/$ARG_TARGET/include/$ARG_TARGET/$ARG_TARGET.h
+            echo "Target $ARG_TARGET created."
         fi
     elif [ "$ARG_TARGET_TYPE" == "test" ]; then
         echo "Creating test application: tests/$ARG_TARGET"
+        if [ -d "tests/$ARG_TARGET" ]; then
+            echo "[Error] Target \"tests/$ARG_TARGET\" already exists)"
+            exit 1
+        fi
+        mkdir -p tests/$ARG_TARGET/src
+        cp "$XBUILDROOT/cmake/templates/Template-Target-TestApp-CMakeLists.txt" "tests/$ARG_TARGET/CMakeLists.txt"
+        cp "$XBUILDROOT/cmake/templates/Template-Sources.cmake" "tests/$ARG_TARGET/Sources.cmake"
+        touch tests/$ARG_TARGET/src/$ARG_TARGET.cpp
+        echo "Target $ARG_TARGET created."
     fi
     exit 0
 fi
@@ -483,12 +585,12 @@ else
     echo "-- Fresh Build: no"
 fi
 # Is verbose enabled
-if [ "$ARG_FRESH" == "yes" ]; then
-    echo "-- Verbose: yes"
-    XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} --verbose"
-else
-    echo "-- Verbose: no"
-fi
+#f [ "$ARG_FRESH" == "yes" ]; then
+#   echo "-- Verbose: yes"
+#   XBUILD_CONFIG_CMD="${XBUILD_CONFIG_CMD} --verbose"
+#lse
+#   echo "-- Verbose: no"
+#i
 # - Definitions
 echo "-- Definitions:"
 for opt in "${ARG_OPTIONS[@]}"; do
