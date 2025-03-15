@@ -1,0 +1,5 @@
+
+set(TARGETNAME <YOUR-TARGET-NAME>)
+xbd_add_library(${TARGETNAME})
+
+set_target_properties (${TARGETNAME} PROPERTIES FOLDER libs)

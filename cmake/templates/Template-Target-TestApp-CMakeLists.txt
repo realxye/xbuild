@@ -1,0 +1,5 @@
+
+set(TARGETNAME <YOUR-TARGET-NAME>)
+xbd_add_executable(${TARGETNAME} SUBSYSTEM "CONSOLE")
+
+set_target_properties (${TARGETNAME} PROPERTIES FOLDER tests)
