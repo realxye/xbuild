@@ -100,6 +100,8 @@ shift # move to next argument
 if [ "$XBUILD_COMMAND" == "help" ]; then
     (xbuildhelp $1)
     exit 0
+elif [ "$XBUILD_COMMAND" == "init" ]; then
+    echo "Command: $XBUILD_COMMAND"
 elif [ "$XBUILD_COMMAND" == "create" ]; then
     echo "Command: $XBUILD_COMMAND"
 elif [ "$XBUILD_COMMAND" == "config" ]; then
@@ -213,37 +215,42 @@ while [[ $# -gt 0 ]]; do
 done
 
 # ***********************************
+#   COMMAND: INIT
+# ***********************************
+
+if [ "$XBUILD_COMMAND" == "init" ]; then
+    echo " "
+    echo ">>>> XBuild initializing project ... <<<<"
+    if [ -f "./CMakeLists.txt" ]; then
+        echo "[Error] MakeLists.txt already exists"
+        exit 1
+    fi
+    # Copy project templates
+    cp "$XBUILDROOT/cmake/templates/Template-Project-CMakeLists.txt" ./CMakeLists.txt
+    if [ ! -f "./CMakeLists.txt" ]; then
+        echo "[Error] Fail to copy MakeLists.txt"
+        exit 1
+    fi
+    # Make sub dirs: apps, libs, tests
+    if [ ! -d apps ]; then
+        mkdir -p apps
+    fi
+    if [ ! -d libs ]; then
+        mkdir -p libs
+    fi
+    if [ ! -d tests ]; then
+        mkdir -p tests
+    fi
+    echo "Project initialized."
+    exit 0
+fi
+
+# ***********************************
 #   COMMAND: CREATE
 # ***********************************
 
 if [ "$XBUILD_COMMAND" == "create" ]; then
     echo " "
-    if [ "$ARG_TARGET_TYPE" == "project" ]; then
-        echo ">>>> XBuild initializing project ... <<<<"
-        if [ -f "./CMakeLists.txt" ]; then
-            echo "[Error] MakeLists.txt already exists"
-            exit 1
-        fi
-        # Copy project templates
-        cp "$XBUILDROOT/cmake/templates/Template-Project-CMakeLists.txt" ./CMakeLists.txt
-        if [ ! -f "./CMakeLists.txt" ]; then
-            echo "[Error] Fail to copy MakeLists.txt"
-            exit 1
-        fi
-        # Make sub dirs: apps, libs, tests
-        if [ ! -d apps ]; then
-            mkdir -p apps
-        fi
-        if [ ! -d libs ]; then
-            mkdir -p libs
-        fi
-        if [ ! -d tests ]; then
-            mkdir -p tests
-        fi
-        echo "Project initialized."
-        exit 0
-    fi
-
     echo ">>>> XBuild creating target ... <<<<"
     if [ "$ARG_TARGET" == "" ]; then
         echo "[Error] Target is not defined (use \"--target <TARGETNAME>\" to define target)"
